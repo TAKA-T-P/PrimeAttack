@@ -116,6 +116,17 @@ select#cpu-level{
   transition:opacity 1.2s ease;
 }
 .lowstock-warning.fade-out{opacity:0;}
+.mistake-flash{
+  position:absolute;inset:0;z-index:55;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+  font-size:clamp(32px,11vw,52px);font-weight:800;
+  color:#fff;text-shadow:0 3px 10px rgba(0,0,0,0.6);
+  background:rgba(255,82,82,0.35);
+  opacity:1;
+  transition:opacity 0.5s ease;
+}
+.mistake-flash.fade-out{opacity:0;}
 .rotated{transform:rotate(180deg);}
 .status-bar{
   display:flex;align-items:center;justify-content:center;gap:10px;
@@ -295,11 +306,12 @@ select#cpu-level{
   <button id="pause-btn" class="pause-btn hidden">ポーズ</button>
   <div id="board">
     <div id="top-zone" class="player-zone">
+      <div id="p2-mistake-flash" class="mistake-flash hidden">お手つき！</div>
       <div id="p2-lowstock" class="lowstock-warning hidden">残り3枚！</div>
       <div id="p2-hand" class="hand-row"></div>
       <div id="p2-remaining" class="remaining-label"></div>
       <div class="status-bar">
-        <button id="p2-declare" class="declare-btn">10カウント宣言</button>
+        <button id="p2-declare" class="declare-btn">パス</button>
         <div id="p2-message" class="message"></div>
       </div>
     </div>
@@ -316,11 +328,12 @@ select#cpu-level{
     </div>
 
     <div id="bottom-zone" class="player-zone">
+      <div id="p1-mistake-flash" class="mistake-flash hidden">お手つき！</div>
       <div id="p1-lowstock" class="lowstock-warning hidden">残り3枚！</div>
       <div id="p1-hand" class="hand-row"></div>
       <div id="p1-remaining" class="remaining-label"></div>
       <div class="status-bar">
-        <button id="p1-declare" class="declare-btn">10カウント宣言</button>
+        <button id="p1-declare" class="declare-btn">パス</button>
         <div id="p1-message" class="message"></div>
       </div>
     </div>
@@ -523,12 +536,21 @@ function nextComposite(){
 
 function checkRoundEnd(){
   if (state.phase !== 'PLAYING') return;
-  if (remainingTotal() === 0){ triggerRoundTransition(); return; }
-  if (!hasLegalMove('p1') && !hasLegalMove('p2')){ triggerRoundTransition(); return; }
+  if (remainingTotal() === 0){ beginRoundEnd(); return; }
+  if (!hasLegalMove('p1') && !hasLegalMove('p2')){ beginRoundEnd(); return; }
+}
+
+function beginRoundEnd(){
+  if (state.phase !== 'PLAYING') return;
+  state.phase = 'ROUND_ENDING';
+  state.inputLocked = true;
+  clearCPUTimer();
+  clearTenCountTimer();
+  setTimeout(()=> triggerRoundTransition(), 1500);
 }
 
 function triggerRoundTransition(){
-  if (state.phase !== 'PLAYING') return;
+  if (state.phase !== 'ROUND_ENDING') return;
   state.phase = 'ROUND_TRANSITION';
   state.inputLocked = true;
   clearCPUTimer();
@@ -613,7 +635,7 @@ function tickTenCount(){
   if (state.tenCount.remaining <= 0){
     clearTenCountTimer();
     render();
-    triggerRoundTransition();
+    beginRoundEnd();
   } else {
     render();
   }
@@ -697,6 +719,18 @@ function showLowStockWarning(playerId){
   }, 1200);
 }
 
+function showMistakeFlash(playerId){
+  const el = document.getElementById(playerId + '-mistake-flash');
+  if (!el) return;
+  el.classList.remove('hidden', 'fade-out');
+  void el.offsetWidth;
+  el.classList.add('fade-out');
+  setTimeout(()=>{
+    el.classList.add('hidden');
+    el.classList.remove('fade-out');
+  }, 900);
+}
+
 function playCard(playerId, index){
   if (state.phase !== 'PLAYING' || state.inputLocked) return;
   if (Date.now() < state.actionLockUntil) return;
@@ -735,6 +769,7 @@ function playCard(playerId, index){
   playSound('incorrect');
   player.locked = true;
   player.lockReason = 'mistake';
+  showMistakeFlash(playerId);
   checkRoundEnd();
   render();
   if (state.phase === 'PLAYING'){
@@ -887,7 +922,7 @@ function renderStatus(){
     p2Btn.disabled = !declareEnabled;
   }
 
-  document.getElementById('top-zone').classList.toggle('rotated', state.mode === 'local2p');
+  document.getElementById('top-zone').classList.add('rotated');
   document.getElementById('composite-row').classList.toggle('rot90', state.mode === 'local2p');
 
   document.getElementById('pause-btn').classList.toggle('hidden', state.phase !== 'PLAYING');
