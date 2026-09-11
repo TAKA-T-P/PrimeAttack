@@ -93,6 +93,19 @@ button,input,select{font-family:inherit;}
   padding:0;
 }
 .sound-toggle-btn.muted{opacity:0.5;}
+.help-btn{
+  position:absolute;
+  top:calc(env(safe-area-inset-top) + 14px);
+  left:16px;
+  width:44px;height:44px;
+  border-radius:50%;
+  border:1px solid #2c3244;
+  background:rgba(28,33,48,0.85);
+  color:var(--text);
+  font-size:20px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;
+}
 fieldset{
   width:100%;max-width:420px;
   border:1px solid #2c3244;
@@ -127,6 +140,44 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 .start-btn:disabled{opacity:0.4;}
 .warning{color:var(--danger);font-size:13px;margin:-6px 0 0;}
+
+/* ---------- Help screen ---------- */
+#help-screen{
+  flex-direction:column;
+  align-items:center;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+  background:linear-gradient(160deg,#1a1440 0%,#2d1f72 55%,#160f38 100%);
+}
+.help-content{
+  width:100%;max-width:460px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.help-title{
+  font-size:clamp(22px,7vw,30px);font-weight:800;color:#fff;
+  text-align:center;margin:0 0 4px;
+}
+.help-block{
+  background:rgba(255,255,255,0.06);
+  border:1px solid #2c3244;
+  border-radius:14px;
+  padding:14px 16px;
+}
+.help-block-title{
+  font-weight:800;color:#fff;font-size:clamp(14px,4vw,17px);
+  margin-bottom:6px;
+}
+.help-block p{
+  margin:4px 0;color:var(--text);font-size:clamp(13px,3.6vw,15px);line-height:1.6;
+}
+.help-example{
+  display:flex;flex-direction:column;align-items:center;gap:6px;margin:10px 0;
+}
+.help-example-arrow{color:var(--sub);font-size:13px;}
+.help-card-row{
+  display:flex;gap:8px;justify-content:center;max-width:240px;margin:6px auto 0;
+}
 
 /* ---------- Game screen ---------- */
 #game-screen{
@@ -413,6 +464,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 
 <div id="title-screen" class="screen">
   <div id="title-bg" class="title-bg"></div>
+  <button id="help-btn" type="button" class="help-btn">？</button>
   <button id="sound-toggle-btn" type="button" class="sound-toggle-btn" data-on="true">🔊</button>
   <h1>素数スピード</h1>
   <p class="subtitle">Prime Number Speed</p>
@@ -449,6 +501,66 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 
   <button id="start-btn" class="start-btn">スタート</button>
   <p id="level-warning" class="warning hidden">出題レベルを1つ以上選択してください</p>
+</div>
+
+<div id="help-screen" class="screen hidden">
+  <div class="help-content">
+    <h2 class="help-title">遊び方</h2>
+
+    <div class="help-block">
+      <div class="help-block-title">素数スピードとは？</div>
+      <p>中央に出てくる「合成数」を、<strong>2・3・5・7・11</strong>の素数カードを使って素因数分解（そいんすうぶんかい）するスピードゲームです。</p>
+      <p>「30 = 2×3×5」のように、大きな数を小さい数のかけ算に分けることを素因数分解といいます。</p>
+      <p>相手より早くカードを出して、自分のカードを先になくしたら勝ちです！</p>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">① 中央の数字を見よう</div>
+      <p>ゲームが始まると、画面中央に合成数カードが1枚出ます。この数字を素因数分解します。</p>
+      <div class="help-example">
+        <div class="composite-card level-1">28</div>
+        <div class="help-example-arrow">↓ 素因数分解</div>
+        <div class="help-card-row">
+          <div class="card p1-card">2</div>
+          <div class="card p1-card">2</div>
+          <div class="card p1-card">7</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">② 出せる素数カードをタップ！</div>
+      <p>自分の手札の中から、その数字の素因数になっているカードをタップしてください。正しいカードを出すと、手札からカードがなくなり、新しいカードが補充されます。</p>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">③ 間違えると「お手つき！」</div>
+      <p>その数字の素因数ではないカードを出すと「お手つき！」になります。お手つきすると、新しい合成数カードが出るまでカードを出すことができません。</p>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">④ 出せないときは「パス」</div>
+      <p>「もう出せるカードがない！」と思ったら、「パス」ボタンを押すことができます。パスすると10カウントが始まり、その間、相手はカードを出すことができます。10カウントが終わると、次の合成数カードへ進みます。</p>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">⑤ ターンが終わったら答えを確認</div>
+      <p>合成数をすべて素因数分解できたときなどに、そのターンは終了します。ターン終了画面では素因数分解の答えを確認できます。「次へ」を押すと、新しい数字で次のターンが始まります。</p>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">⑥ 先にカードをなくした方が勝ち！</div>
+      <p>正しいカードを出していくと、自分の山札が少しずつ減っていきます。先にすべてのカードを使い切ったプレイヤーの勝ちです！</p>
+    </div>
+
+    <div class="help-block">
+      <div class="help-block-title">モードについて</div>
+      <p><strong>CPU対戦</strong>：コンピュータと対戦します。CPUの強さは 1・2・3・4・5・MAX から選べます。</p>
+      <p><strong>2人対戦</strong>：1台のスマホやタブレットを2人ではさんで対戦します。上側が2P、下側が1Pです。</p>
+    </div>
+
+    <button id="help-back-btn" class="start-btn">タイトルへ戻る</button>
+  </div>
 </div>
 
 <div id="game-screen" class="screen hidden">
@@ -1272,6 +1384,7 @@ function renderStatus(){
 /* ================= SCREEN / GAME FLOW ================= */
 function showScreen(name){
   document.getElementById('title-screen').classList.toggle('hidden', name !== 'title');
+  document.getElementById('help-screen').classList.toggle('hidden', name !== 'help');
   document.getElementById('game-screen').classList.toggle('hidden', name !== 'game');
 }
 
@@ -1556,6 +1669,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     btn.dataset.on = newOn ? 'true' : 'false';
     btn.textContent = newOn ? '🔊' : '🔇';
     btn.classList.toggle('muted', !newOn);
+  });
+
+  document.getElementById('help-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('help');
+  });
+  document.getElementById('help-back-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('title');
   });
 
   document.getElementById('start-btn').addEventListener('pointerdown', (e)=>{
