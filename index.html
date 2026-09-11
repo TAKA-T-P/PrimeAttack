@@ -388,6 +388,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   -webkit-backdrop-filter:blur(3px);
 }
 .round-content.rot90{transform:rotate(90deg);}
+.round-content.peeking{display:none;}
 #round-title{font-size:clamp(18px,5vw,26px);font-weight:800;color:#fff;animation:pop 0.3s ease;}
 #round-factors{font-size:clamp(18px,6vw,30px);font-weight:700;color:#fff;letter-spacing:1px;text-align:center;}
 
@@ -499,6 +500,11 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   background:var(--panel);color:var(--text);font-size:16px;font-weight:700;
   border:1px solid #3a4258;
 }
+.result-content{
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+  transition:transform 0.3s ease;
+}
+.result-content.rot90{transform:rotate(90deg);}
 .result-btn-row{
   display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
   max-width:min(92vw,420px);
@@ -686,20 +692,22 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     </div>
   </div>
   <div id="result-overlay" class="overlay hidden">
-    <div id="result-text"></div>
-    <div class="result-play-counts">
-      <div class="result-play-counts-title">出したカードの枚数</div>
-      <div id="result-play-counts-values" class="result-play-counts-values"></div>
-    </div>
-    <div id="result-character" class="cpu-character-block hidden">
-      <div id="result-char-emoji" class="cpu-character-emoji"></div>
-      <div id="result-char-name" class="cpu-character-name"></div>
-      <div class="speech-bubble"><div id="result-char-line"></div></div>
-    </div>
-    <div class="result-btn-row">
-      <button id="next-opponent-btn" class="result-btn hidden">次の相手と戦う</button>
-      <button id="retry-btn" class="result-btn">もう一度</button>
-      <button id="title-btn" class="result-btn">タイトルへ</button>
+    <div id="result-content" class="result-content">
+      <div id="result-text"></div>
+      <div class="result-play-counts">
+        <div class="result-play-counts-title">出したカードの枚数</div>
+        <div id="result-play-counts-values" class="result-play-counts-values"></div>
+      </div>
+      <div id="result-character" class="cpu-character-block hidden">
+        <div id="result-char-emoji" class="cpu-character-emoji"></div>
+        <div id="result-char-name" class="cpu-character-name"></div>
+        <div class="speech-bubble"><div id="result-char-line"></div></div>
+      </div>
+      <div class="result-btn-row">
+        <button id="next-opponent-btn" class="result-btn hidden">次の相手と戦う</button>
+        <button id="retry-btn" class="result-btn">もう一度</button>
+        <button id="title-btn" class="result-btn">タイトルへ</button>
+      </div>
     </div>
   </div>
   <div id="pause-overlay" class="overlay hidden">
@@ -1053,6 +1061,7 @@ function triggerRoundTransition(){
   playSound('roundTransition');
   document.getElementById('round-factors').textContent = factorsToString(state.currentComposite);
   document.getElementById('round-content').classList.toggle('rot90', state.mode === 'local2p');
+  document.getElementById('round-content').classList.remove('peeking');
 
   const charBlock = document.getElementById('round-character');
   if (state.mode === 'single'){
@@ -1615,6 +1624,8 @@ function showResultScreen(winnerId){
   const text = document.getElementById('result-text');
   const charBlock = document.getElementById('result-character');
 
+  document.getElementById('result-content').classList.toggle('rot90', state.mode === 'local2p');
+
   const opponentLabel = state.mode === 'single' ? 'CPU' : '2P';
   document.getElementById('result-play-counts-values').textContent =
     `1P：${state.playerSuccessfulPlays}枚　${opponentLabel}：${state.cpuSuccessfulPlays}枚`;
@@ -1811,6 +1822,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('round-next-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     proceedToNextRound();
+  });
+
+  document.getElementById('round-overlay').addEventListener('pointerdown', (e)=>{
+    const content = document.getElementById('round-content');
+    if (content.contains(e.target)) return;
+    e.preventDefault();
+    content.classList.toggle('peeking');
   });
 });
 </script>
