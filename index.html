@@ -280,8 +280,98 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   -webkit-backdrop-filter:blur(3px);
 }
 .round-content.rot90{transform:rotate(90deg);}
-#round-title{font-size:clamp(30px,9vw,56px);font-weight:800;color:#fff;animation:pop 0.3s ease;}
+#round-title{font-size:clamp(18px,5vw,26px);font-weight:800;color:#fff;animation:pop 0.3s ease;}
 #round-factors{font-size:clamp(18px,6vw,30px);font-weight:700;color:#fff;letter-spacing:1px;text-align:center;}
+
+/* ---------- CPU character ---------- */
+.cpu-character-block{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  max-width:100%;
+}
+.cpu-character-emoji{
+  font-size:clamp(72px,20vw,110px);
+  line-height:1;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+}
+.cpu-character-name{
+  font-weight:800;color:#fff;font-size:clamp(16px,4.5vw,22px);
+  text-align:center;
+}
+.speech-bubble{
+  position:relative;
+  max-width:min(84vw,360px);
+  background:rgba(255,255,255,0.94);
+  color:#12151f;
+  border-radius:14px;
+  padding:10px 16px;
+  font-size:clamp(13px,3.6vw,16px);
+  font-weight:600;
+  line-height:1.4;
+  text-align:center;
+  overflow-wrap:break-word;
+  word-break:break-word;
+}
+.speech-bubble::after{
+  content:'';
+  position:absolute;
+  top:-8px;left:50%;
+  transform:translateX(-50%);
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-bottom:8px solid rgba(255,255,255,0.94);
+}
+#round-character .cpu-character-emoji{font-size:clamp(44px,13vw,68px);}
+#round-character .speech-bubble{font-size:clamp(12px,3.2vw,14px);padding:8px 14px;}
+#character-intro-overlay{z-index:400;}
+#char-intro-content{will-change:transform,opacity;}
+@keyframes charBouncePop{
+  0%{transform:scale(0.5);opacity:0;}
+  60%{transform:scale(1.15);opacity:1;}
+  100%{transform:scale(1);opacity:1;}
+}
+@keyframes charSlideIn{
+  0%{transform:translateX(-60px);opacity:0;}
+  100%{transform:translateX(0);opacity:1;}
+}
+@keyframes charFastFadeSlide{
+  0%{transform:translateY(20px);opacity:0;}
+  100%{transform:translateY(0);opacity:1;}
+}
+@keyframes charFloatFadeIn{
+  0%{transform:translateY(16px);opacity:0;}
+  100%{transform:translateY(0);opacity:1;}
+}
+@keyframes charZoomIn{
+  0%{transform:scale(0.3);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+@keyframes charScreenShake{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-4px,2px);}
+  40%{transform:translate(4px,-2px);}
+  60%{transform:translate(-3px,1px);}
+  80%{transform:translate(3px,-1px);}
+}
+@keyframes charGlitchIn{
+  0%{opacity:0;filter:brightness(2) saturate(0);transform:translateX(0);}
+  15%{opacity:1;filter:brightness(1.5) saturate(0.5);transform:translateX(-3px);}
+  30%{opacity:0.6;filter:brightness(1) saturate(1);transform:translateX(3px);}
+  45%{opacity:1;transform:translateX(-2px);}
+  60%{opacity:0.8;transform:translateX(2px);}
+  100%{opacity:1;filter:none;transform:translateX(0);}
+}
+.char-anim-1{animation:charBouncePop 0.5s ease;}
+.char-anim-2{animation:charSlideIn 0.4s ease;}
+.char-anim-3{animation:charFastFadeSlide 0.3s ease;}
+.char-anim-4{animation:charFloatFadeIn 0.6s ease;}
+.char-anim-5{animation:charZoomIn 0.5s ease;}
+.char-anim-max{animation:charGlitchIn 0.5s steps(2,end);}
+.char-intro-shake{animation:charScreenShake 0.3s ease;}
+@media (prefers-reduced-motion: reduce){
+  .char-anim-1,.char-anim-2,.char-anim-3,.char-anim-4,.char-anim-5,.char-anim-max,.char-intro-shake{
+    animation:none !important;
+  }
+}
 #result-overlay{background:rgba(0,0,0,0.75);}
 #result-text{font-size:clamp(40px,13vw,86px);font-weight:800;color:#fff;animation:pop 0.4s ease;text-align:center;}
 .result-btn{
@@ -380,15 +470,32 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   </div>
 
   <div id="countdown-overlay" class="overlay hidden"><div id="countdown-text"></div></div>
+  <div id="character-intro-overlay" class="overlay hidden">
+    <div id="char-intro-content" class="cpu-character-block">
+      <div id="char-intro-emoji" class="cpu-character-emoji"></div>
+      <div id="char-intro-name" class="cpu-character-name"></div>
+      <div class="speech-bubble"><div id="char-intro-line"></div></div>
+    </div>
+  </div>
   <div id="round-overlay" class="overlay hidden">
     <div id="round-content" class="round-content">
       <div id="round-title">ターン終了！</div>
       <div id="round-factors"></div>
+      <div id="round-character" class="cpu-character-block hidden">
+        <div id="round-char-emoji" class="cpu-character-emoji"></div>
+        <div id="round-char-name" class="cpu-character-name"></div>
+        <div class="speech-bubble"><div id="round-char-line"></div></div>
+      </div>
       <button id="round-next-btn" class="result-btn">次へ</button>
     </div>
   </div>
   <div id="result-overlay" class="overlay hidden">
     <div id="result-text"></div>
+    <div id="result-character" class="cpu-character-block hidden">
+      <div id="result-char-emoji" class="cpu-character-emoji"></div>
+      <div id="result-char-name" class="cpu-character-name"></div>
+      <div class="speech-bubble"><div id="result-char-line"></div></div>
+    </div>
     <div style="display:flex;gap:14px;">
       <button id="retry-btn" class="result-btn">もう一度</button>
       <button id="title-btn" class="result-btn">タイトルへ</button>
@@ -425,6 +532,109 @@ const CPU_LEVELS = {
   MAX:{minMs:440,maxMs:900,mistakeRate:0}
 };
 
+const LEAD_STATE = {
+  CPU_BIG_LEAD:'CPU_BIG_LEAD',
+  CPU_LEAD:'CPU_LEAD',
+  CPU_SMALL_LEAD:'CPU_SMALL_LEAD',
+  EVEN:'EVEN',
+  PLAYER_SMALL_LEAD:'PLAYER_SMALL_LEAD',
+  PLAYER_LEAD:'PLAYER_LEAD',
+  PLAYER_BIG_LEAD:'PLAYER_BIG_LEAD'
+};
+
+const CPU_CHARACTERS = {
+  1:{
+    name:'ピヨファクター', emoji:'🐥', animClass:'char-anim-1',
+    intro:['よーし！ぼくと勝負だ！負けないピヨ！'],
+    round:{
+      CPU_BIG_LEAD:['あれっ！？ぼく、すごくリードしてるピヨ！'],
+      CPU_LEAD:['この調子でいくピヨ！'],
+      CPU_SMALL_LEAD:['ちょっとだけぼくが前だピヨ！'],
+      EVEN:['おんなじだ！次で勝負ピヨ！'],
+      PLAYER_SMALL_LEAD:['むむっ、ちょっと負けてるピヨ……！'],
+      PLAYER_LEAD:['ま、まだ追いつけるピヨ！'],
+      PLAYER_BIG_LEAD:['は、速すぎるピヨー！']
+    },
+    win:['やったー！ぼくの勝ちだピヨ！'],
+    lose:['負けたピヨ～！つ、次は負けないピヨ！']
+  },
+  2:{
+    name:'プライムウルフ', emoji:'🐺', animClass:'char-anim-2',
+    intro:['俺のスピードについてこられるかな？'],
+    round:{
+      CPU_BIG_LEAD:['どうした？ずいぶん差がついたぞ！'],
+      CPU_LEAD:['いいぞ。このまま逃げ切る！'],
+      CPU_SMALL_LEAD:['一歩リードだ。油断はしないぞ！'],
+      EVEN:['互角か……おもしろい！'],
+      PLAYER_SMALL_LEAD:['少し先に行かれたか……！'],
+      PLAYER_LEAD:['やるな！だが、まだ終わってない！'],
+      PLAYER_BIG_LEAD:['くっ……このスピード、ただ者じゃないな！']
+    },
+    win:['俺の勝ちだ！いい勝負だったな！'],
+    lose:['俺の負けか……強いな、お前！']
+  },
+  3:{
+    name:'素数忍者シノビ', emoji:'🥷', animClass:'char-anim-3',
+    intro:['素因数を見切れるか……勝負！'],
+    round:{
+      CPU_BIG_LEAD:['遅い……すでに勝負は見えた。'],
+      CPU_LEAD:['こちらが一歩先だ。'],
+      CPU_SMALL_LEAD:['わずかな差……だが差は差だ。'],
+      EVEN:['互角……次の一手で決まる。'],
+      PLAYER_SMALL_LEAD:['先を取られたか……。'],
+      PLAYER_LEAD:['見事……だが追いつく。'],
+      PLAYER_BIG_LEAD:['何という速さ……見切れぬ！']
+    },
+    win:['勝負あり。拙者の勝ちだ。'],
+    lose:['見事……拙者の完敗だ。']
+  },
+  4:{
+    name:'ファクター魔導士', emoji:'🧙', animClass:'char-anim-4',
+    intro:['素因数の魔法……君に見破れるかな？'],
+    round:{
+      CPU_BIG_LEAD:['ほっほっほ。数字はすべてお見通しじゃ。'],
+      CPU_LEAD:['この程度の因数分解、造作もない。'],
+      CPU_SMALL_LEAD:['わずかにこちらが優勢じゃな。'],
+      EVEN:['ほう……わしと互角とは面白い。'],
+      PLAYER_SMALL_LEAD:['ほう、一歩先を行くか。'],
+      PLAYER_LEAD:['なかなかやるのう。少し本気を出すか。'],
+      PLAYER_BIG_LEAD:['な、なんと！わしの計算を上回るとは！']
+    },
+    win:['ほっほっほ！素因数の力、思い知ったか！'],
+    lose:['参った！君こそ真の因数分解マスターじゃ！']
+  },
+  5:{
+    name:'プライムドラゴン', emoji:'🐉', animClass:'char-anim-5',
+    intro:['我に挑むか！その勇気、試してやろう！'],
+    round:{
+      CPU_BIG_LEAD:['フハハハ！この差、もはや絶望的だ！'],
+      CPU_LEAD:['どうした！我はまだまだ速くなるぞ！'],
+      CPU_SMALL_LEAD:['わずかとはいえ、我が一歩先だ！'],
+      EVEN:['ほう……我と互角だと！？面白い！'],
+      PLAYER_SMALL_LEAD:['ぐぬぬ……少し油断したか！'],
+      PLAYER_LEAD:['おのれ！人間にここまで追い込まれるとは！'],
+      PLAYER_BIG_LEAD:['ば、馬鹿な！この我が圧倒されているだと！？']
+    },
+    win:['フハハハハ！我の勝利だ！'],
+    lose:['この我が敗れるとは……見事だ！']
+  },
+  MAX:{
+    name:'PRIME-X', emoji:'🤖', animClass:'char-anim-max',
+    intro:['PRIME-X 起動。勝率計算開始……対戦を開始します。'],
+    round:{
+      CPU_BIG_LEAD:['解析結果：勝率極めて高。抵抗は無意味です。'],
+      CPU_LEAD:['予測範囲内。処理を継続します。'],
+      CPU_SMALL_LEAD:['CPU優勢。計算速度を維持します。'],
+      EVEN:['警告。対戦者の処理速度、想定以上。'],
+      PLAYER_SMALL_LEAD:['誤差発生……再計算します。'],
+      PLAYER_LEAD:['警告。勝率低下。演算速度を上昇。'],
+      PLAYER_BIG_LEAD:['ERROR……理解不能……なぜ人間がこれほど速い！？']
+    },
+    win:['計算完了。PRIME-Xの勝利です。'],
+    lose:['ERROR……敗北……ありえ……な……い……。']
+  }
+};
+
 /* ================= STATE ================= */
 let state = {
   mode:'single',
@@ -449,9 +659,13 @@ let state = {
 
   tenCount:{active:false,remaining:10,declarer:null,intervalId:null},
   cpuTimerId:null,
+  characterIntroTimerId:null,
   inputLocked:true,
   actionLockUntil:0,
-  winner:null
+  winner:null,
+
+  playerSuccessfulPlays:0,
+  cpuSuccessfulPlays:0
 };
 
 /* ================= UTIL ================= */
@@ -494,6 +708,36 @@ function hasPendingRefill(){
   return state.players.p1.hand.includes(null) || state.players.p2.hand.includes(null);
 }
 
+/* ================= CPU CHARACTER ================= */
+function pickRandomMessage(messages){
+  if (!messages || messages.length === 0) return '';
+  return messages[Math.floor(Math.random()*messages.length)];
+}
+function getCpuCharacter(){
+  return CPU_CHARACTERS[state.cpuLevel];
+}
+function getCpuLeadState(){
+  const diff = state.cpuSuccessfulPlays - state.playerSuccessfulPlays;
+  if (diff >= 5) return LEAD_STATE.CPU_BIG_LEAD;
+  if (diff >= 3) return LEAD_STATE.CPU_LEAD;
+  if (diff >= 1) return LEAD_STATE.CPU_SMALL_LEAD;
+  if (diff === 0) return LEAD_STATE.EVEN;
+  if (diff >= -2) return LEAD_STATE.PLAYER_SMALL_LEAD;
+  if (diff >= -4) return LEAD_STATE.PLAYER_LEAD;
+  return LEAD_STATE.PLAYER_BIG_LEAD;
+}
+function getCpuIntroMessage(){
+  return pickRandomMessage(getCpuCharacter().intro);
+}
+function getCpuRoundMessage(){
+  const ch = getCpuCharacter();
+  return pickRandomMessage(ch.round[getCpuLeadState()]);
+}
+function getCpuGameOverMessage(cpuWon){
+  const ch = getCpuCharacter();
+  return pickRandomMessage(cpuWon ? ch.win : ch.lose);
+}
+
 /* ================= AUDIO ================= */
 let audioCtx = null;
 function ensureAudio(){
@@ -530,6 +774,8 @@ function playSound(name){
     case 'declare': beep(400,0.15,'triangle'); break;
     case 'win': beep(784,0.15); beep(988,0.15,'sine',0.15,0.15); beep(1175,0.25,'sine',0.15,0.3); break;
     case 'lose': beep(300,0.3,'sawtooth'); beep(220,0.4,'sawtooth',0.15,0.2); break;
+    case 'cpuBossIntro': beep(200,0.15,'sawtooth',0.15); beep(150,0.2,'sawtooth',0.15,0.15); break;
+    case 'cpuMaxIntro': beep(1200,0.05,'square',0.1); beep(1200,0.05,'square',0.1,0.08); beep(1200,0.08,'square',0.12,0.16); break;
   }
 }
 
@@ -602,6 +848,18 @@ function triggerRoundTransition(){
   playSound('roundTransition');
   document.getElementById('round-factors').textContent = factorsToString(state.currentComposite);
   document.getElementById('round-content').classList.toggle('rot90', state.mode === 'local2p');
+
+  const charBlock = document.getElementById('round-character');
+  if (state.mode === 'single'){
+    const ch = getCpuCharacter();
+    document.getElementById('round-char-emoji').textContent = ch.emoji;
+    document.getElementById('round-char-name').textContent = ch.name;
+    document.getElementById('round-char-line').textContent = getCpuRoundMessage();
+    charBlock.classList.remove('hidden');
+  } else {
+    charBlock.classList.add('hidden');
+  }
+
   document.getElementById('round-overlay').classList.remove('hidden');
   render();
 }
@@ -799,6 +1057,7 @@ function playCard(playerId, index){
     state.remainingFactors[prime]--;
     state.roundUsed[playerId].push(prime);
     state.lastPlayed[prime] = { time: Date.now(), playerId };
+    if (playerId === 'p1') state.playerSuccessfulPlays++; else state.cpuSuccessfulPlays++;
     player.hand[index] = null;
     render();
     if (state.phase === 'PLAYING') checkRoundEnd();
@@ -1010,6 +1269,30 @@ function runStartCountdown(cb){
   step();
 }
 
+function clearCharacterIntroTimer(){
+  if (state.characterIntroTimerId){ clearTimeout(state.characterIntroTimerId); state.characterIntroTimerId = null; }
+}
+function showCharacterIntro(cb){
+  const ch = getCpuCharacter();
+  const overlay = document.getElementById('character-intro-overlay');
+  const content = document.getElementById('char-intro-content');
+  document.getElementById('char-intro-emoji').textContent = ch.emoji;
+  document.getElementById('char-intro-name').textContent = ch.name;
+  document.getElementById('char-intro-line').textContent = getCpuIntroMessage();
+  content.className = 'cpu-character-block ' + ch.animClass;
+  overlay.classList.remove('char-intro-shake');
+  void overlay.offsetWidth;
+  if (state.cpuLevel === 5) overlay.classList.add('char-intro-shake');
+  overlay.classList.remove('hidden');
+  if (state.cpuLevel === 5) playSound('cpuBossIntro');
+  if (state.cpuLevel === 'MAX') playSound('cpuMaxIntro');
+  state.characterIntroTimerId = setTimeout(()=>{
+    overlay.classList.add('hidden');
+    state.characterIntroTimerId = null;
+    cb();
+  }, 1800);
+}
+
 function syncSettingsFromUI(){
   state.mode = document.querySelector('.mode-btn.selected').dataset.mode;
   const cpuLevel = document.querySelector('.cpu-level-btn.selected').dataset.level;
@@ -1068,8 +1351,11 @@ function startGame(){
   state.currentComposite = null;
   state.remainingFactors = {};
   state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
+  state.playerSuccessfulPlays = 0;
+  state.cpuSuccessfulPlays = 0;
   clearCPUTimer();
   clearTenCountTimer();
+  clearCharacterIntroTimer();
 
   state.phase = 'START_COUNTDOWN';
   state.inputLocked = true;
@@ -1078,24 +1364,41 @@ function startGame(){
   document.getElementById('round-overlay').classList.add('hidden');
   document.getElementById('pause-overlay').classList.add('hidden');
   document.getElementById('countdown-overlay').classList.add('hidden');
+  document.getElementById('character-intro-overlay').classList.add('hidden');
   showScreen('game');
   render();
 
-  runStartCountdown(()=>{
-    nextComposite();
-    state.phase = 'PLAYING';
-    state.inputLocked = false;
-    render();
-    if (state.mode === 'single') scheduleCPU();
-  });
+  const proceedToCountdown = ()=>{
+    runStartCountdown(()=>{
+      nextComposite();
+      state.phase = 'PLAYING';
+      state.inputLocked = false;
+      render();
+      if (state.mode === 'single') scheduleCPU();
+    });
+  };
+
+  if (state.mode === 'single'){
+    showCharacterIntro(proceedToCountdown);
+  } else {
+    proceedToCountdown();
+  }
 }
 
 function showResultScreen(winnerId){
   const text = document.getElementById('result-text');
+  const charBlock = document.getElementById('result-character');
   if (state.mode === 'single'){
     text.textContent = winnerId === 'p1' ? '勝ち！' : '負け…';
+    const cpuWon = winnerId === 'p2';
+    const ch = getCpuCharacter();
+    document.getElementById('result-char-emoji').textContent = ch.emoji;
+    document.getElementById('result-char-name').textContent = ch.name;
+    document.getElementById('result-char-line').textContent = getCpuGameOverMessage(cpuWon);
+    charBlock.classList.remove('hidden');
   } else {
     text.textContent = (winnerId === 'p1' ? '1P' : '2P') + '勝ち';
+    charBlock.classList.add('hidden');
   }
   document.getElementById('result-overlay').classList.remove('hidden');
 }
@@ -1103,9 +1406,11 @@ function showResultScreen(winnerId){
 function goToTitle(){
   clearCPUTimer();
   clearTenCountTimer();
+  clearCharacterIntroTimer();
   state.phase = 'TITLE';
   document.getElementById('result-overlay').classList.add('hidden');
   document.getElementById('round-overlay').classList.add('hidden');
+  document.getElementById('character-intro-overlay').classList.add('hidden');
   showScreen('title');
 }
 
