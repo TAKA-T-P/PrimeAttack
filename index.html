@@ -490,6 +490,9 @@ function hasLegalMove(playerId){
   if (player.locked) return false;
   return player.hand.some(c => (state.remainingFactors[c]||0) > 0);
 }
+function hasPendingRefill(){
+  return state.players.p1.hand.includes(null) || state.players.p2.hand.includes(null);
+}
 
 /* ================= AUDIO ================= */
 let audioCtx = null;
@@ -577,6 +580,7 @@ function nextComposite(){
 function checkRoundEnd(){
   if (state.phase !== 'PLAYING') return;
   if (remainingTotal() === 0){ beginRoundEnd(); return; }
+  if (hasPendingRefill()) return;
   if (!hasLegalMove('p1') && !hasLegalMove('p2')){ beginRoundEnd(); return; }
 }
 
