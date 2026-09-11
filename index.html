@@ -104,7 +104,18 @@ select#cpu-level{
   flex:0 0 auto;
   display:flex;flex-direction:column;
   gap:4px;padding:6px 10px;
+  position:relative;
 }
+.lowstock-warning{
+  position:absolute;top:-6px;left:50%;
+  transform:translate(-50%,-100%);
+  font-size:clamp(20px,7vw,30px);font-weight:800;
+  color:#ffd54f;background:rgba(20,24,34,0.75);
+  padding:4px 14px;border-radius:10px;
+  opacity:0.9;white-space:nowrap;pointer-events:none;z-index:50;
+  transition:opacity 0.6s ease;
+}
+.lowstock-warning.fade-out{opacity:0;}
 .rotated{transform:rotate(180deg);}
 .status-bar{
   display:flex;align-items:center;justify-content:center;gap:10px;
@@ -135,6 +146,7 @@ select#cpu-level{
   background:#333c50;color:#cfd6e6;font-size:20px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
 }
+#p1-used .used-chip{background:#fafafa;color:#12151f;}
 .hand-row{
   display:flex;justify-content:center;gap:clamp(4px,1.6vw,8px);
   min-height:44px;
@@ -160,6 +172,7 @@ select#cpu-level{
   80%{transform:translateX(4px);}
 }
 .card.shake{animation:shake 0.35s ease;background:var(--danger) !important;color:#fff !important;}
+.card.empty-slot{background:transparent;border:2px dashed #3a4258;}
 
 .center-area{
   flex:1;display:flex;flex-direction:column;
@@ -204,7 +217,13 @@ select#cpu-level{
   font-size:clamp(70px,22vw,150px);font-weight:800;color:#fff;
   text-shadow:0 4px 16px rgba(0,0,0,0.6);animation:pop 0.25s ease;
 }
-#round-text{font-size:clamp(30px,9vw,56px);font-weight:800;color:#fff;animation:pop 0.3s ease;}
+.round-content{
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  transition:transform 0.3s ease;
+}
+.round-content.rot90{transform:rotate(90deg);}
+#round-title{font-size:clamp(30px,9vw,56px);font-weight:800;color:#fff;animation:pop 0.3s ease;}
+#round-factors{font-size:clamp(18px,6vw,30px);font-weight:700;color:#ffd54f;letter-spacing:1px;text-align:center;}
 #result-overlay{background:rgba(0,0,0,0.75);}
 #result-text{font-size:clamp(40px,13vw,86px);font-weight:800;color:#fff;animation:pop 0.4s ease;text-align:center;}
 .result-btn{
@@ -267,6 +286,7 @@ select#cpu-level{
   <button id="pause-btn" class="pause-btn hidden">ポーズ</button>
   <div id="board">
     <div id="top-zone" class="player-zone">
+      <div id="p2-lowstock" class="lowstock-warning hidden">残り3枚！</div>
       <div id="p2-hand" class="hand-row"></div>
       <div id="p2-remaining" class="remaining-label"></div>
       <div class="status-bar">
@@ -287,6 +307,7 @@ select#cpu-level{
     </div>
 
     <div id="bottom-zone" class="player-zone">
+      <div id="p1-lowstock" class="lowstock-warning hidden">残り3枚！</div>
       <div id="p1-hand" class="hand-row"></div>
       <div id="p1-remaining" class="remaining-label"></div>
       <div class="status-bar">
@@ -297,7 +318,13 @@ select#cpu-level{
   </div>
 
   <div id="countdown-overlay" class="overlay hidden"><div id="countdown-text"></div></div>
-  <div id="round-overlay" class="overlay hidden"><div id="round-text"></div></div>
+  <div id="round-overlay" class="overlay hidden">
+    <div id="round-content" class="round-content">
+      <div id="round-title">ターン終了！</div>
+      <div id="round-factors"></div>
+      <button id="round-next-btn" class="result-btn">次へ</button>
+    </div>
+  </div>
   <div id="result-overlay" class="overlay hidden">
     <div id="result-text"></div>
     <div style="display:flex;gap:14px;">
@@ -384,6 +411,14 @@ function factorize(n){
     }
   }
   return result;
+}
+function factorsToString(n){
+  const f = factorize(n);
+  const parts = [];
+  PRIMES.forEach(p=>{
+    for (let i=0;i<(f[p]||0);i++) parts.push(p);
+  });
+  return n + '=' + parts.join('×');
 }
 function remainingTotal(){
   return Object.values(state.remainingFactors).reduce((a,b)=>a+b,0);
@@ -490,38 +525,42 @@ function triggerRoundTransition(){
   clearCPUTimer();
   clearTenCountTimer();
   playSound('roundTransition');
-  state.round++;
-  document.getElementById('round-text').textContent = 'ラウンド' + state.round;
+  document.getElementById('round-factors').textContent = factorsToString(state.currentComposite);
+  document.getElementById('round-content').classList.toggle('rot90', state.mode === 'local2p');
   document.getElementById('round-overlay').classList.remove('hidden');
   render();
-  setTimeout(()=>{
-    document.getElementById('round-overlay').classList.add('hidden');
-    state.players.p1.locked = false; state.players.p1.lockReason = null; state.players.p1.declared = false; state.players.p1.beatenMessageUntil = 0;
-    state.players.p2.locked = false; state.players.p2.lockReason = null; state.players.p2.declared = false; state.players.p2.beatenMessageUntil = 0;
-    state.roundUsed = {p1:[],p2:[]};
-    state.lastPlayed = {};
-    state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
-    nextComposite();
-    state.phase = 'PLAYING';
-    state.inputLocked = false;
-    render();
-    if (state.mode === 'single') scheduleCPU();
-  }, 1000);
 }
 
-function refillHand(playerId, index){
+function proceedToNextRound(){
+  if (state.phase !== 'ROUND_TRANSITION') return;
+  document.getElementById('round-overlay').classList.add('hidden');
+  state.players.p1.locked = false; state.players.p1.lockReason = null; state.players.p1.declared = false; state.players.p1.beatenMessageUntil = 0;
+  state.players.p2.locked = false; state.players.p2.lockReason = null; state.players.p2.declared = false; state.players.p2.beatenMessageUntil = 0;
+  state.roundUsed = {p1:[],p2:[]};
+  state.lastPlayed = {};
+  state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
+  nextComposite();
+  state.phase = 'PLAYING';
+  state.inputLocked = false;
+  render();
+  if (state.mode === 'single') scheduleCPU();
+}
+
+function refillHandSlot(playerId, index){
   const player = state.players[playerId];
-  if (player.deck.length === 0){
-    player.hand.splice(index,1);
-    return;
-  }
+  if (player.hand[index] !== null) return;
   const next = player.deck[0];
-  if (next === 'FINISH'){
-    player.hand.splice(index,1);
+  if (next === undefined || next === 'FINISH'){
+    render();
     endGame(playerId);
     return;
   }
   player.hand[index] = player.deck.shift();
+  render();
+  animateSlideIn(playerId, index);
+  const remaining = player.deck.length - 1;
+  if (remaining === 3) showLowStockWarning(playerId);
+  if (state.phase === 'PLAYING') checkRoundEnd();
 }
 
 function endGame(winnerId){
@@ -590,13 +629,71 @@ function spawnGhost(el, type){
   setTimeout(()=> ghost.remove(), 520);
 }
 
+function animateBeatenBounce(el){
+  const rect = el.getBoundingClientRect();
+  const ghost = document.createElement('div');
+  ghost.className = el.className;
+  ghost.textContent = el.textContent;
+  ghost.style.position = 'fixed';
+  ghost.style.left = rect.left + 'px';
+  ghost.style.top = rect.top + 'px';
+  ghost.style.width = rect.width + 'px';
+  ghost.style.height = rect.height + 'px';
+  ghost.style.margin = '0';
+  ghost.style.transition = 'transform 0.3s ease';
+  document.getElementById('anim-layer').appendChild(ghost);
+  el.style.visibility = 'hidden';
+
+  const cx = window.innerWidth/2 - (rect.left + rect.width/2);
+  const cy = window.innerHeight/2 - (rect.top + rect.height/2);
+  requestAnimationFrame(()=>{
+    ghost.style.transform = `translate(${cx}px, ${cy}px)`;
+  });
+  setTimeout(()=>{
+    ghost.style.transform = 'translate(0,0)';
+  }, 300);
+  setTimeout(()=>{
+    ghost.remove();
+    el.style.visibility = '';
+  }, 620);
+}
+
+function animateSlideIn(playerId, index){
+  const el = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
+  if (!el) return;
+  el.style.transition = 'none';
+  el.style.transform = 'translateY(40px)';
+  el.style.opacity = '0';
+  void el.offsetWidth;
+  el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+  el.style.transform = 'translateY(0)';
+  el.style.opacity = '1';
+  setTimeout(()=>{
+    el.style.transition = '';
+    el.style.transform = '';
+    el.style.opacity = '';
+  }, 320);
+}
+
+function showLowStockWarning(playerId){
+  const el = document.getElementById(playerId + '-lowstock');
+  if (!el) return;
+  el.classList.remove('hidden', 'fade-out');
+  void el.offsetWidth;
+  el.classList.add('fade-out');
+  setTimeout(()=>{
+    el.classList.add('hidden');
+    el.classList.remove('fade-out');
+  }, 600);
+}
+
 function playCard(playerId, index){
   if (state.phase !== 'PLAYING' || state.inputLocked) return;
   if (Date.now() < state.actionLockUntil) return;
   const player = state.players[playerId];
   if (player.locked) return;
   const prime = player.hand[index];
-  if (prime === undefined) return;
+  if (prime === undefined || prime === null) return;
   state.actionLockUntil = Date.now() + 120;
 
   const cardEl = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
@@ -607,9 +704,10 @@ function playCard(playerId, index){
     state.remainingFactors[prime]--;
     state.roundUsed[playerId].push(prime);
     state.lastPlayed[prime] = { time: Date.now(), playerId };
-    refillHand(playerId, index);
-    if (state.phase === 'PLAYING') checkRoundEnd();
+    player.hand[index] = null;
     render();
+    if (state.phase === 'PLAYING') checkRoundEnd();
+    setTimeout(()=> refillHandSlot(playerId, index), 1000);
     return;
   }
 
@@ -618,6 +716,8 @@ function playCard(playerId, index){
     playSound('beaten');
     player.beatenMessageUntil = Date.now() + 1200;
     render();
+    const beatenEl = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
+    if (beatenEl) animateBeatenBounce(beatenEl);
     setTimeout(()=>{ render(); }, 1200);
     return;
   }
@@ -653,8 +753,12 @@ function cpuAct(){
   const player = state.players.p2;
   if (player.locked) return;
   const hand = player.hand;
-  const legalIdx = hand.map((c,i)=>i).filter(i => (state.remainingFactors[hand[i]]||0) > 0);
-  const illegalIdx = hand.map((c,i)=>i).filter(i => (state.remainingFactors[hand[i]]||0) === 0);
+  const legalIdx = [];
+  const illegalIdx = [];
+  hand.forEach((c,i)=>{
+    if (c === null) return;
+    if ((state.remainingFactors[c]||0) > 0) legalIdx.push(i); else illegalIdx.push(i);
+  });
   const cfg = CPU_LEVELS[state.cpuLevel];
 
   let idx = null;
@@ -700,10 +804,16 @@ function renderHandRow(playerId, containerId){
   const isCpu = (playerId === 'p2' && state.mode === 'single');
   player.hand.forEach((val, idx)=>{
     const btn = document.createElement('button');
-    btn.className = 'card ' + (playerId === 'p1' ? 'p1-card' : 'p2-card') + (isCpu ? ' cpu-card' : '');
-    btn.textContent = val;
     btn.dataset.player = playerId;
     btn.dataset.index = idx;
+    if (val === null){
+      btn.className = 'card empty-slot';
+      btn.disabled = true;
+      container.appendChild(btn);
+      return;
+    }
+    btn.className = 'card ' + (playerId === 'p1' ? 'p1-card' : 'p2-card') + (isCpu ? ' cpu-card' : '');
+    btn.textContent = val;
     const disabled = state.phase !== 'PLAYING' || state.inputLocked || player.locked || isCpu;
     if (disabled) btn.classList.add('disabled');
     if (!isCpu){
@@ -969,6 +1079,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('pause-no').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     resumeFromPause();
+  });
+
+  document.getElementById('round-next-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    proceedToNextRound();
   });
 });
 </script>
