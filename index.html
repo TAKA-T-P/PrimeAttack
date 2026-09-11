@@ -661,7 +661,7 @@ let state = {
   cpuTimerId:null,
   characterIntroTimerId:null,
   inputLocked:true,
-  actionLockUntil:0,
+  actionLockUntil:{p1:0,p2:0},
   winner:null,
 
   playerSuccessfulPlays:0,
@@ -1042,12 +1042,12 @@ function showMistakeFlash(playerId){
 
 function playCard(playerId, index){
   if (state.phase !== 'PLAYING' || state.inputLocked) return;
-  if (Date.now() < state.actionLockUntil) return;
+  if (Date.now() < state.actionLockUntil[playerId]) return;
   const player = state.players[playerId];
   if (player.locked) return;
   const prime = player.hand[index];
   if (prime === undefined || prime === null) return;
-  state.actionLockUntil = Date.now() + 120;
+  state.actionLockUntil[playerId] = Date.now() + 120;
 
   const cardEl = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
 
