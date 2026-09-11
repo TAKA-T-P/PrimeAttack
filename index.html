@@ -481,6 +481,18 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 #result-overlay{background:rgba(0,0,0,0.75);}
 #result-text{font-size:clamp(40px,13vw,86px);font-weight:800;color:#fff;animation:pop 0.4s ease;text-align:center;}
+#result-text.result-text-win{
+  background:linear-gradient(90deg,#ff5252,#ffa726,#ffee58,#66bb6a,#42a5f5,#7e57c2,#ff5252);
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:transparent;
+  animation:pop 0.4s ease, resultTextGlow 1.6s ease-in-out infinite;
+}
+@keyframes resultTextGlow{
+  0%,100%{text-shadow:0 0 10px rgba(255,255,255,0.6),0 0 22px rgba(255,110,199,0.5);}
+  50%{text-shadow:0 0 20px rgba(255,255,255,0.95),0 0 38px rgba(120,180,255,0.75);}
+}
 .result-btn{
   padding:14px 26px;border:none;border-radius:12px;
   background:var(--panel);color:var(--text);font-size:16px;font-weight:700;
@@ -629,12 +641,12 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 
     <div class="center-area">
       <div id="composite-row" class="composite-row">
-        <div id="p1-used" class="used-col"></div>
+        <div id="p2-used" class="used-col"></div>
         <div class="composite-wrap">
           <div id="composite-card" class="composite-card"></div>
           <div id="composite-label" class="composite-label"></div>
         </div>
-        <div id="p2-used" class="used-col"></div>
+        <div id="p1-used" class="used-col"></div>
       </div>
     </div>
 
@@ -1608,6 +1620,7 @@ function showResultScreen(winnerId){
 
   if (state.mode === 'single'){
     text.textContent = winnerId === 'p1' ? '勝ち！' : '負け…';
+    text.classList.toggle('result-text-win', winnerId === 'p1');
     const cpuWon = winnerId === 'p2';
     const ch = getCpuCharacter();
     document.getElementById('result-char-emoji').textContent = ch.emoji;
@@ -1616,6 +1629,7 @@ function showResultScreen(winnerId){
     charBlock.classList.remove('hidden');
   } else {
     text.textContent = (winnerId === 'p1' ? '1P' : '2P') + '勝ち';
+    text.classList.add('result-text-win');
     charBlock.classList.add('hidden');
   }
 
