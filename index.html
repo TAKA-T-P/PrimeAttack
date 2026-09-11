@@ -371,6 +371,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 .overlay.hidden{display:none;}
 @keyframes pop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+#countdown-content.rot90{transform:rotate(90deg);}
 #countdown-text{
   font-size:clamp(70px,22vw,150px);font-weight:800;color:#fff;
   text-shadow:0 4px 16px rgba(0,0,0,0.6);animation:pop 0.25s ease;
@@ -674,7 +675,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     </div>
   </div>
 
-  <div id="countdown-overlay" class="overlay hidden"><div id="countdown-text"></div></div>
+  <div id="countdown-overlay" class="overlay hidden"><div id="countdown-content"><div id="countdown-text"></div></div></div>
   <div id="character-intro-overlay" class="overlay hidden">
     <div id="char-intro-content" class="cpu-character-block">
       <div id="char-intro-emoji" class="cpu-character-emoji"></div>
@@ -1481,7 +1482,9 @@ function showScreen(name){
 function runStartCountdown(cb){
   const seq = ['3','2','1','START!'];
   const overlay = document.getElementById('countdown-overlay');
+  const content = document.getElementById('countdown-content');
   const text = document.getElementById('countdown-text');
+  content.classList.toggle('rot90', state.mode === 'local2p');
   overlay.classList.remove('hidden');
   let i = 0;
   function step(){
