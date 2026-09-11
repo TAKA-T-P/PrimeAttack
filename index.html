@@ -664,10 +664,15 @@ function declareTenCount(playerId){
   player.locked = true;
   player.lockReason = 'declared';
   player.declared = true;
+  playSound('declare');
+  checkRoundEnd();
+  if (state.phase !== 'PLAYING'){
+    render();
+    return;
+  }
   state.tenCount.active = true;
   state.tenCount.remaining = 10;
   state.tenCount.declarer = playerId;
-  playSound('declare');
   render();
   state.tenCount.intervalId = setInterval(tickTenCount, 1000);
 }
