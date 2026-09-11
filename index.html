@@ -131,12 +131,59 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   border-color:var(--accent);
   color:#fff;
 }
+
+/* CPU strength: color per level */
+.cpu-level-btn[data-level="1"]{background:rgba(21,101,192,0.4);border-color:#1565c0;}
+.cpu-level-btn[data-level="2"]{background:rgba(46,125,50,0.4);border-color:#2e7d32;}
+.cpu-level-btn[data-level="3"]{background:rgba(249,168,37,0.4);border-color:#f9a825;}
+.cpu-level-btn[data-level="4"]{background:rgba(239,108,0,0.4);border-color:#ef6c00;}
+.cpu-level-btn[data-level="5"]{background:rgba(198,40,40,0.4);border-color:#c62828;}
+.cpu-level-btn[data-level="MAX"]{
+  background:linear-gradient(135deg,#ad1457,#6a1b9a);
+  border-color:#ec407a;color:#fff;
+  animation:maxPulseGlow 1.6s ease-in-out infinite;
+}
+.cpu-level-btn.selected[data-level="1"]{background:#1565c0;color:#fff;}
+.cpu-level-btn.selected[data-level="2"]{background:#2e7d32;color:#fff;}
+.cpu-level-btn.selected[data-level="3"]{background:#f9a825;color:#3a2900;}
+.cpu-level-btn.selected[data-level="4"]{background:#ef6c00;color:#fff;}
+.cpu-level-btn.selected[data-level="5"]{background:#c62828;color:#fff;}
+.cpu-level-btn.selected{
+  box-shadow:0 0 0 3px rgba(255,255,255,0.85);
+  transform:scale(1.05);
+}
+.cpu-level-btn.selected[data-level="MAX"]{
+  box-shadow:none;
+  border-color:#f8bbd0;
+}
+@keyframes maxPulseGlow{
+  0%,100%{box-shadow:0 0 8px 1px rgba(236,64,122,0.55);}
+  50%{box-shadow:0 0 18px 5px rgba(236,64,122,0.95);}
+}
+
+/* 出題レベル: composite-card colors */
+.level-toggle-btn[data-value="1"]{background:rgba(46,125,50,0.4);border-color:var(--lv1);}
+.level-toggle-btn[data-value="2"]{background:rgba(21,101,192,0.4);border-color:var(--lv2);}
+.level-toggle-btn[data-value="3"]{background:rgba(230,81,0,0.4);border-color:var(--lv3);}
+.level-toggle-btn[data-value="4"]{background:rgba(198,40,40,0.4);border-color:var(--lv4);}
+.level-toggle-btn.selected[data-value="1"]{background:var(--lv1);color:#fff;}
+.level-toggle-btn.selected[data-value="2"]{background:var(--lv2);color:#fff;}
+.level-toggle-btn.selected[data-value="3"]{background:var(--lv3);color:#fff;}
+.level-toggle-btn.selected[data-value="4"]{background:var(--lv4);color:#fff;}
+.level-toggle-btn.selected{
+  box-shadow:0 0 0 3px rgba(255,255,255,0.85);
+  transform:scale(1.05);
+}
+
 .start-btn{
   width:100%;max-width:420px;
   padding:16px;border:none;border-radius:14px;
   background:linear-gradient(135deg,var(--accent),#2e7d32);
   color:#fff;font-size:20px;font-weight:700;letter-spacing:2px;
   margin-top:8px;
+}
+#start-btn{
+  background:linear-gradient(135deg,var(--accent2),#1565c0);
 }
 .start-btn:disabled{opacity:0.4;}
 .warning{color:var(--danger);font-size:13px;margin:-6px 0 0;}
@@ -485,7 +532,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <button type="button" class="option-btn cpu-level-btn selected" data-level="3">3</button>
       <button type="button" class="option-btn cpu-level-btn" data-level="4">4</button>
       <button type="button" class="option-btn cpu-level-btn" data-level="5">5</button>
-      <button type="button" class="option-btn cpu-level-btn" data-level="MAX">MAX</button>
+      <button type="button" class="option-btn cpu-level-btn hidden" data-level="MAX">MAX</button>
     </div>
   </fieldset>
 
@@ -808,7 +855,9 @@ let state = {
   winner:null,
 
   playerSuccessfulPlays:0,
-  cpuSuccessfulPlays:0
+  cpuSuccessfulPlays:0,
+
+  maxUnlocked:false
 };
 
 /* ================= UTIL ================= */
@@ -1053,8 +1102,23 @@ function endGame(winnerId){
   } else {
     playSound('win');
   }
+  if (state.mode === 'single' && winnerId === 'p1' && state.cpuLevel === 5){
+    unlockMaxLevel();
+  }
   render();
   setTimeout(()=> showResultScreen(winnerId), 900);
+}
+
+function unlockMaxLevel(){
+  state.maxUnlocked = true;
+  const btn = document.querySelector('.cpu-level-btn[data-level="MAX"]');
+  if (btn) btn.classList.remove('hidden');
+  try{
+    const raw = localStorage.getItem('primeSpeedSettings');
+    const s = raw ? JSON.parse(raw) : {};
+    s.maxUnlocked = true;
+    localStorage.setItem('primeSpeedSettings', JSON.stringify(s));
+  }catch(e){}
 }
 
 /* ================= 10-COUNT ================= */
@@ -1459,6 +1523,11 @@ function loadSettings(){
     const s = JSON.parse(raw);
     if (s.mode){
       document.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('selected', b.dataset.mode === s.mode));
+    }
+    if (s.maxUnlocked || s.cpuLevel === 'MAX'){
+      state.maxUnlocked = true;
+      const maxBtn = document.querySelector('.cpu-level-btn[data-level="MAX"]');
+      if (maxBtn) maxBtn.classList.remove('hidden');
     }
     if (s.cpuLevel !== undefined){
       document.querySelectorAll('.cpu-level-btn').forEach(b=>{
