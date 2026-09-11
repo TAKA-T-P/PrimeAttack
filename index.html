@@ -622,6 +622,7 @@ function proceedToNextRound(){
 }
 
 function refillHandSlot(playerId, index){
+  if (state.phase === 'GAME_OVER') return;
   const player = state.players[playerId];
   if (player.hand[index] !== null) return;
   const next = player.deck[0];
@@ -639,6 +640,7 @@ function refillHandSlot(playerId, index){
 }
 
 function endGame(winnerId){
+  if (state.phase === 'GAME_OVER') return;
   state.phase = 'GAME_OVER';
   state.winner = winnerId;
   state.inputLocked = true;
