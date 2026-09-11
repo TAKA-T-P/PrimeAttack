@@ -113,7 +113,7 @@ select#cpu-level{
   color:#ffd54f;background:rgba(20,24,34,0.75);
   padding:4px 14px;border-radius:10px;
   opacity:0.9;white-space:nowrap;pointer-events:none;z-index:50;
-  transition:opacity 0.6s ease;
+  transition:opacity 1.2s ease;
 }
 .lowstock-warning.fade-out{opacity:0;}
 .rotated{transform:rotate(180deg);}
@@ -127,6 +127,7 @@ select#cpu-level{
 .remaining-label{
   text-align:center;font-size:11px;color:var(--sub);letter-spacing:0.5px;
 }
+.remaining-count{font-weight:800;font-size:2em;}
 .declare-btn{
   padding:4px 10px;border-radius:20px;border:1px solid var(--accent2);
   background:transparent;color:var(--accent2);font-size:12px;
@@ -577,6 +578,7 @@ function endGame(winnerId){
   state.inputLocked = true;
   clearCPUTimer();
   clearTenCountTimer();
+  document.getElementById('round-overlay').classList.add('hidden');
   if (state.mode === 'single'){
     playSound(winnerId === 'p1' ? 'win' : 'lose');
   } else {
@@ -692,7 +694,7 @@ function showLowStockWarning(playerId){
   setTimeout(()=>{
     el.classList.add('hidden');
     el.classList.remove('fade-out');
-  }, 600);
+  }, 1200);
 }
 
 function playCard(playerId, index){
@@ -801,7 +803,7 @@ function renderRemaining(){
   ['p1','p2'].forEach(pid=>{
     const player = state.players[pid];
     const count = Math.max(0, player.deck.length - 1);
-    document.getElementById(pid + '-remaining').textContent = '山札 残り' + count + '枚';
+    document.getElementById(pid + '-remaining').innerHTML = '山札 残り<span class="remaining-count">' + count + '</span>枚';
   });
 }
 
@@ -975,6 +977,9 @@ function startGame(){
   state.inputLocked = true;
 
   document.getElementById('result-overlay').classList.add('hidden');
+  document.getElementById('round-overlay').classList.add('hidden');
+  document.getElementById('pause-overlay').classList.add('hidden');
+  document.getElementById('countdown-overlay').classList.add('hidden');
   showScreen('game');
   render();
 
@@ -1002,6 +1007,7 @@ function goToTitle(){
   clearTenCountTimer();
   state.phase = 'TITLE';
   document.getElementById('result-overlay').classList.add('hidden');
+  document.getElementById('round-overlay').classList.add('hidden');
   showScreen('title');
 }
 
