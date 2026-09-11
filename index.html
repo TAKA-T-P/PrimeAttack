@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>素数スピード</title>
+<title>プライム×アタック！</title>
 <style>
 :root{
   --bg:#10131a;
@@ -39,7 +39,7 @@ button,input,select{font-family:inherit;}
   align-items:center;
   justify-content:flex-start;
   overflow-y:auto;
-  padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+  padding:calc(env(safe-area-inset-top) + 60px) 20px calc(env(safe-area-inset-bottom) + 24px);
   gap:10px;
   background:linear-gradient(160deg,#1a1440 0%,#2d1f72 55%,#160f38 100%);
 }
@@ -63,10 +63,11 @@ button,input,select{font-family:inherit;}
   100%{transform:translate(55vw,-85vh);}
 }
 #title-screen h1{
-  font-size:clamp(32px,9vw,46px);
+  font-size:clamp(22px,7.2vw,40px);
   margin:0;
-  letter-spacing:2px;
+  letter-spacing:1px;
   font-weight:900;
+  text-align:center;
   background:linear-gradient(90deg,#ff5252,#ffa726,#ffee58,#66bb6a,#42a5f5,#7e57c2,#ff5252);
   background-clip:text;
   -webkit-background-clip:text;
@@ -525,8 +526,8 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   <div id="title-bg" class="title-bg"></div>
   <button id="help-btn" type="button" class="help-btn">？</button>
   <button id="sound-toggle-btn" type="button" class="sound-toggle-btn" data-on="true">🔊</button>
-  <h1>素数スピード</h1>
-  <p class="subtitle">Prime Number Speed</p>
+  <h1>プライム×アタック！</h1>
+  <p class="subtitle">Prime Number Attack</p>
 
   <fieldset>
     <legend>モード選択</legend>
@@ -567,7 +568,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     <h2 class="help-title">遊び方</h2>
 
     <div class="help-block">
-      <div class="help-block-title">素数スピードとは？</div>
+      <div class="help-block-title">プライム×アタック！とは？</div>
       <p>中央に出てくる「合成数」を、<strong>2・3・5・7・11</strong>の素数カードを使って素因数分解（そいんすうぶんかい）するスピードゲームです。</p>
       <p>「30 = 2×3×5」のように、大きな数を小さい数のかけ算に分けることを素因数分解といいます。</p>
       <p>相手より早くカードを出して、自分のカードを先になくしたら勝ちです！</p>
