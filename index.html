@@ -41,7 +41,26 @@ button,input,select{font-family:inherit;}
   overflow-y:auto;
   padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
   gap:14px;
-  position:relative;
+  background:linear-gradient(160deg,#1a1440 0%,#2d1f72 55%,#160f38 100%);
+}
+.title-bg{
+  position:absolute;inset:0;
+  overflow:hidden;
+  z-index:-1;
+  pointer-events:none;
+}
+.title-bg-num{
+  position:absolute;
+  font-weight:800;
+  white-space:nowrap;
+  will-change:transform;
+  animation-name:driftUp;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+@keyframes driftUp{
+  0%{transform:translate(0,0);}
+  100%{transform:translate(55vw,-85vh);}
 }
 #title-screen h1{
   font-size:clamp(28px,8vw,40px);
@@ -283,6 +302,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 <body>
 
 <div id="title-screen" class="screen">
+  <div id="title-bg" class="title-bg"></div>
   <button id="sound-toggle-btn" type="button" class="sound-toggle-btn" data-on="true">🔊</button>
   <h1>素数スピード</h1>
   <p class="subtitle">Prime Number Speed</p>
@@ -1101,6 +1121,28 @@ function confirmPauseToTitle(){
 }
 
 /* ================= INIT ================= */
+function initTitleBackground(){
+  const bg = document.getElementById('title-bg');
+  if (!bg) return;
+  const pool = Object.values(LEVEL_DECKS).flatMap(lv => lv.cards);
+  const COUNT = 28;
+  for (let i=0;i<COUNT;i++){
+    const el = document.createElement('span');
+    el.className = 'title-bg-num';
+    el.textContent = pool[Math.floor(Math.random()*pool.length)];
+    const size = 14 + Math.random()*30;
+    const duration = 18 + Math.random()*16;
+    const delay = -Math.random()*duration;
+    const alpha = 0.16 + Math.random()*0.26;
+    el.style.left = Math.random()*100 + '%';
+    el.style.top = Math.random()*100 + '%';
+    el.style.fontSize = size.toFixed(0) + 'px';
+    el.style.color = `rgba(196,181,253,${alpha.toFixed(2)})`;
+    el.style.animationDuration = duration.toFixed(1) + 's';
+    el.style.animationDelay = delay.toFixed(1) + 's';
+    bg.appendChild(el);
+  }
+}
 function updateLevelWarning(){
   const anyChecked = document.querySelectorAll('.level-toggle-btn.selected').length > 0;
   document.getElementById('level-warning').classList.toggle('hidden', anyChecked);
@@ -1113,6 +1155,7 @@ function updateCpuFieldsetVisibility(){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  initTitleBackground();
   loadSettings();
   updateLevelWarning();
   updateCpuFieldsetVisibility();
