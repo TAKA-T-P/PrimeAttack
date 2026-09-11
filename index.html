@@ -173,6 +173,9 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .message{
   font-size:clamp(12px,3.4vw,15px);color:var(--sub);
 }
+.remaining-row{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
 .remaining-label{
   text-align:center;font-size:11px;color:var(--sub);letter-spacing:0.5px;
 }
@@ -439,9 +442,11 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div id="p2-mistake-flash" class="mistake-flash hidden">お手つき！</div>
       <div id="p2-lowstock" class="lowstock-warning hidden">残り3枚！</div>
       <div id="p2-hand" class="hand-row"></div>
-      <div id="p2-remaining" class="remaining-label"></div>
-      <div class="status-bar">
+      <div class="remaining-row">
+        <div id="p2-remaining" class="remaining-label"></div>
         <button id="p2-declare" class="declare-btn">パス</button>
+      </div>
+      <div class="status-bar">
         <div id="p2-message" class="message"></div>
       </div>
     </div>
@@ -461,9 +466,11 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div id="p1-mistake-flash" class="mistake-flash hidden">お手つき！</div>
       <div id="p1-lowstock" class="lowstock-warning hidden">残り3枚！</div>
       <div id="p1-hand" class="hand-row"></div>
-      <div id="p1-remaining" class="remaining-label"></div>
-      <div class="status-bar">
+      <div class="remaining-row">
+        <div id="p1-remaining" class="remaining-label"></div>
         <button id="p1-declare" class="declare-btn">パス</button>
+      </div>
+      <div class="status-bar">
         <div id="p1-message" class="message"></div>
       </div>
     </div>
