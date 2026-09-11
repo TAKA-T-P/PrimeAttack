@@ -40,7 +40,7 @@ button,input,select{font-family:inherit;}
   justify-content:flex-start;
   overflow-y:auto;
   padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
-  gap:14px;
+  gap:10px;
   background:linear-gradient(160deg,#1a1440 0%,#2d1f72 55%,#160f38 100%);
 }
 .title-bg{
@@ -63,9 +63,15 @@ button,input,select{font-family:inherit;}
   100%{transform:translate(55vw,-85vh);}
 }
 #title-screen h1{
-  font-size:clamp(28px,8vw,40px);
+  font-size:clamp(32px,9vw,46px);
   margin:0;
   letter-spacing:2px;
+  font-weight:900;
+  background:linear-gradient(90deg,#ff5252,#ffa726,#ffee58,#66bb6a,#42a5f5,#7e57c2,#ff5252);
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:transparent;
 }
 #title-screen .subtitle{
   margin:0 0 8px;
@@ -91,15 +97,15 @@ fieldset{
   width:100%;max-width:420px;
   border:1px solid #2c3244;
   border-radius:12px;
-  padding:12px 16px 16px;
+  padding:8px 16px 10px;
 }
 legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .btn-row{
-  display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;
+  display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;
 }
 .option-btn{
   flex:1;min-width:40px;
-  padding:12px 4px;
+  padding:10px 4px;
   border-radius:10px;
   border:1px solid #2c3244;
   background:#12151f;
