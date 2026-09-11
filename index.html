@@ -286,8 +286,8 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 .remaining-count{font-weight:800;font-size:2em;}
 .declare-btn{
-  padding:4px 10px;border-radius:20px;border:1px solid var(--accent2);
-  background:transparent;color:var(--accent2);font-size:12px;
+  padding:6px 14px;border-radius:20px;border:1px solid var(--accent2);
+  background:transparent;color:var(--accent2);font-size:13px;
 }
 .declare-btn:disabled{opacity:0.3;border-color:#555;color:#777;}
 .composite-row{
@@ -518,10 +518,13 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 
 .pause-btn{
-  position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;z-index:350;
+  position:absolute;top:50%;left:10px;z-index:350;
+  transform:translateY(-50%);
+  transition:transform 0.3s ease;
   padding:6px 14px;border-radius:20px;border:1px solid #3a4258;
   background:rgba(28,33,48,0.85);color:var(--text);font-size:13px;
 }
+.pause-btn.rot90{transform:translateY(-50%) rotate(90deg);}
 #pause-overlay{z-index:600;background:rgba(0,0,0,0.75);}
 #pause-text{font-size:clamp(18px,5vw,24px);font-weight:700;color:#fff;text-align:center;padding:0 24px;}
 </style>
@@ -1465,6 +1468,7 @@ function renderStatus(){
   document.getElementById('composite-row').classList.toggle('rot90', state.mode === 'local2p');
 
   document.getElementById('pause-btn').classList.toggle('hidden', state.phase !== 'PLAYING');
+  document.getElementById('pause-btn').classList.toggle('rot90', state.mode === 'local2p');
 }
 
 /* ================= SCREEN / GAME FLOW ================= */
