@@ -41,6 +41,7 @@ button,input,select{font-family:inherit;}
   overflow-y:auto;
   padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
   gap:14px;
+  position:relative;
 }
 #title-screen h1{
   font-size:clamp(28px,8vw,40px);
@@ -53,6 +54,20 @@ button,input,select{font-family:inherit;}
   font-size:14px;
   letter-spacing:1px;
 }
+.sound-toggle-btn{
+  position:absolute;
+  top:calc(env(safe-area-inset-top) + 14px);
+  right:16px;
+  width:44px;height:44px;
+  border-radius:50%;
+  border:1px solid #2c3244;
+  background:rgba(28,33,48,0.85);
+  color:var(--text);
+  font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;
+}
+.sound-toggle-btn.muted{opacity:0.5;}
 fieldset{
   width:100%;max-width:420px;
   border:1px solid #2c3244;
@@ -60,19 +75,23 @@ fieldset{
   padding:12px 16px 16px;
 }
 legend{padding:0 6px;color:var(--sub);font-size:13px;}
-fieldset label{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:15px;margin:6px 10px 2px 0;
+.btn-row{
+  display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;
 }
-.level-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;
+.option-btn{
+  flex:1;min-width:40px;
+  padding:12px 4px;
+  border-radius:10px;
+  border:1px solid #2c3244;
+  background:#12151f;
+  color:var(--text);
+  font-size:15px;font-weight:700;
+  text-align:center;
 }
-select#cpu-level{
-  width:100%;padding:10px;border-radius:8px;border:1px solid #2c3244;
-  background:#12151f;color:var(--text);font-size:15px;
-}
-.sound-toggle{
-  width:100%;max-width:420px;display:flex;align-items:center;gap:8px;font-size:15px;
+.option-btn.selected{
+  background:linear-gradient(135deg,var(--accent),#2e7d32);
+  border-color:var(--accent);
+  color:#fff;
 }
 .start-btn{
   width:100%;max-width:420px;
@@ -264,38 +283,39 @@ select#cpu-level{
 <body>
 
 <div id="title-screen" class="screen">
+  <button id="sound-toggle-btn" type="button" class="sound-toggle-btn" data-on="true">🔊</button>
   <h1>素数スピード</h1>
   <p class="subtitle">Prime Number Speed</p>
 
   <fieldset>
     <legend>モード選択</legend>
-    <label><input type="radio" name="mode" value="single" checked> 1人用（CPU対戦）</label><br>
-    <label><input type="radio" name="mode" value="local2p"> 2人用（1台対戦）</label>
+    <div class="btn-row">
+      <button type="button" class="option-btn mode-btn selected" data-mode="single">CPU対戦</button>
+      <button type="button" class="option-btn mode-btn" data-mode="local2p">2人対戦</button>
+    </div>
   </fieldset>
 
   <fieldset id="cpu-level-fieldset">
     <legend>CPU強さ</legend>
-    <select id="cpu-level">
-      <option value="1">レベル1</option>
-      <option value="2">レベル2</option>
-      <option value="3" selected>レベル3</option>
-      <option value="4">レベル4</option>
-      <option value="5">レベル5</option>
-      <option value="MAX">MAX</option>
-    </select>
+    <div class="btn-row">
+      <button type="button" class="option-btn cpu-level-btn" data-level="1">1</button>
+      <button type="button" class="option-btn cpu-level-btn" data-level="2">2</button>
+      <button type="button" class="option-btn cpu-level-btn selected" data-level="3">3</button>
+      <button type="button" class="option-btn cpu-level-btn" data-level="4">4</button>
+      <button type="button" class="option-btn cpu-level-btn" data-level="5">5</button>
+      <button type="button" class="option-btn cpu-level-btn" data-level="MAX">MAX</button>
+    </div>
   </fieldset>
 
   <fieldset>
     <legend>出題レベル（複数選択可）</legend>
-    <div class="level-grid">
-      <label><input type="checkbox" class="level-check" value="1" checked> レベル1</label>
-      <label><input type="checkbox" class="level-check" value="2" checked> レベル2</label>
-      <label><input type="checkbox" class="level-check" value="3"> レベル3</label>
-      <label><input type="checkbox" class="level-check" value="4"> レベル4</label>
+    <div class="btn-row">
+      <button type="button" class="option-btn level-toggle-btn selected" data-value="1">1</button>
+      <button type="button" class="option-btn level-toggle-btn selected" data-value="2">2</button>
+      <button type="button" class="option-btn level-toggle-btn" data-value="3">3</button>
+      <button type="button" class="option-btn level-toggle-btn" data-value="4">4</button>
     </div>
   </fieldset>
-
-  <label class="sound-toggle"><input type="checkbox" id="sound-toggle" checked> サウンド ON</label>
 
   <button id="start-btn" class="start-btn">スタート</button>
   <p id="level-warning" class="warning hidden">出題レベルを1つ以上選択してください</p>
@@ -960,11 +980,11 @@ function runStartCountdown(cb){
 }
 
 function syncSettingsFromUI(){
-  state.mode = document.querySelector('input[name="mode"]:checked').value;
-  let cpuLevel = document.getElementById('cpu-level').value;
+  state.mode = document.querySelector('.mode-btn.selected').dataset.mode;
+  const cpuLevel = document.querySelector('.cpu-level-btn.selected').dataset.level;
   state.cpuLevel = (cpuLevel === 'MAX') ? 'MAX' : parseInt(cpuLevel,10);
-  state.selectedLevels = Array.from(document.querySelectorAll('.level-check:checked')).map(el=>parseInt(el.value,10));
-  state.soundOn = document.getElementById('sound-toggle').checked;
+  state.selectedLevels = Array.from(document.querySelectorAll('.level-toggle-btn.selected')).map(el=>parseInt(el.dataset.value,10));
+  state.soundOn = document.getElementById('sound-toggle-btn').dataset.on !== 'false';
 }
 function saveSettings(){
   try{
@@ -979,14 +999,26 @@ function loadSettings(){
     const raw = localStorage.getItem('primeSpeedSettings');
     if (!raw) return;
     const s = JSON.parse(raw);
-    if (s.mode) document.querySelector(`input[name="mode"][value="${s.mode}"]`).checked = true;
-    if (s.cpuLevel !== undefined) document.getElementById('cpu-level').value = s.cpuLevel;
-    if (Array.isArray(s.selectedLevels)){
-      document.querySelectorAll('.level-check').forEach(el=>{
-        el.checked = s.selectedLevels.includes(parseInt(el.value,10));
+    if (s.mode){
+      document.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('selected', b.dataset.mode === s.mode));
+    }
+    if (s.cpuLevel !== undefined){
+      document.querySelectorAll('.cpu-level-btn').forEach(b=>{
+        const val = (b.dataset.level === 'MAX') ? 'MAX' : parseInt(b.dataset.level,10);
+        b.classList.toggle('selected', val === s.cpuLevel);
       });
     }
-    if (typeof s.soundOn === 'boolean') document.getElementById('sound-toggle').checked = s.soundOn;
+    if (Array.isArray(s.selectedLevels)){
+      document.querySelectorAll('.level-toggle-btn').forEach(b=>{
+        b.classList.toggle('selected', s.selectedLevels.includes(parseInt(b.dataset.value,10)));
+      });
+    }
+    if (typeof s.soundOn === 'boolean'){
+      const btn = document.getElementById('sound-toggle-btn');
+      btn.dataset.on = s.soundOn ? 'true' : 'false';
+      btn.textContent = s.soundOn ? '🔊' : '🔇';
+      btn.classList.toggle('muted', !s.soundOn);
+    }
   }catch(e){}
 }
 
@@ -1070,12 +1102,13 @@ function confirmPauseToTitle(){
 
 /* ================= INIT ================= */
 function updateLevelWarning(){
-  const anyChecked = document.querySelectorAll('.level-check:checked').length > 0;
+  const anyChecked = document.querySelectorAll('.level-toggle-btn.selected').length > 0;
   document.getElementById('level-warning').classList.toggle('hidden', anyChecked);
   document.getElementById('start-btn').disabled = !anyChecked;
 }
 function updateCpuFieldsetVisibility(){
-  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const selected = document.querySelector('.mode-btn.selected');
+  const mode = selected ? selected.dataset.mode : 'single';
   document.getElementById('cpu-level-fieldset').classList.toggle('hidden', mode !== 'single');
 }
 
@@ -1084,11 +1117,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
   updateLevelWarning();
   updateCpuFieldsetVisibility();
 
-  document.querySelectorAll('input[name="mode"]').forEach(el=>{
-    el.addEventListener('change', updateCpuFieldsetVisibility);
+  document.querySelectorAll('.mode-btn').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      document.querySelectorAll('.mode-btn').forEach(b=> b.classList.remove('selected'));
+      btn.classList.add('selected');
+      updateCpuFieldsetVisibility();
+    });
   });
-  document.querySelectorAll('.level-check').forEach(el=>{
-    el.addEventListener('change', updateLevelWarning);
+  document.querySelectorAll('.cpu-level-btn').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      document.querySelectorAll('.cpu-level-btn').forEach(b=> b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+  document.querySelectorAll('.level-toggle-btn').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      btn.classList.toggle('selected');
+      updateLevelWarning();
+    });
+  });
+  document.getElementById('sound-toggle-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    const btn = document.getElementById('sound-toggle-btn');
+    const newOn = btn.dataset.on === 'false';
+    btn.dataset.on = newOn ? 'true' : 'false';
+    btn.textContent = newOn ? '🔊' : '🔇';
+    btn.classList.toggle('muted', !newOn);
   });
 
   document.getElementById('start-btn').addEventListener('pointerdown', (e)=>{
