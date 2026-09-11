@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>素数スピード</title>
+<style>
+:root{
+  --bg:#10131a;
+  --panel:#1c2130;
+  --accent:#4caf50;
+  --accent2:#42a5f5;
+  --danger:#ff5252;
+  --text:#f1f3f6;
+  --sub:#9aa3b5;
+  --lv1:#2e7d32;
+  --lv2:#1565c0;
+  --lv3:#e65100;
+  --lv4:#c62828;
+}
+*{box-sizing:border-box;}
+html,body{
+  margin:0;padding:0;height:100%;
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input,select{font-family:inherit;}
+.screen{
+  position:fixed;inset:0;
+  display:flex;
+}
+.hidden{display:none !important;}
+
+/* ---------- Title screen ---------- */
+#title-screen{
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  overflow-y:auto;
+  padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+  gap:14px;
+}
+#title-screen h1{
+  font-size:clamp(28px,8vw,40px);
+  margin:0;
+  letter-spacing:2px;
+}
+#title-screen .subtitle{
+  margin:0 0 8px;
+  color:var(--sub);
+  font-size:14px;
+  letter-spacing:1px;
+}
+fieldset{
+  width:100%;max-width:420px;
+  border:1px solid #2c3244;
+  border-radius:12px;
+  padding:12px 16px 16px;
+}
+legend{padding:0 6px;color:var(--sub);font-size:13px;}
+fieldset label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:15px;margin:6px 10px 2px 0;
+}
+.level-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;
+}
+select#cpu-level{
+  width:100%;padding:10px;border-radius:8px;border:1px solid #2c3244;
+  background:#12151f;color:var(--text);font-size:15px;
+}
+.sound-toggle{
+  width:100%;max-width:420px;display:flex;align-items:center;gap:8px;font-size:15px;
+}
+.start-btn{
+  width:100%;max-width:420px;
+  padding:16px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),#2e7d32);
+  color:#fff;font-size:20px;font-weight:700;letter-spacing:2px;
+  margin-top:8px;
+}
+.start-btn:disabled{opacity:0.4;}
+.warning{color:var(--danger);font-size:13px;margin:-6px 0 0;}
+
+/* ---------- Game screen ---------- */
+#game-screen{
+  flex-direction:column;
+  height:100dvh;width:100vw;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  overflow:hidden;
+  position:relative;
+  touch-action:none;
+  user-select:none;
+}
+#board{
+  flex:1;display:flex;flex-direction:column;
+  max-width:600px;width:100%;margin:0 auto;
+  min-height:0;
+}
+.player-zone{
+  flex:0 0 auto;
+  display:flex;flex-direction:column;
+  gap:4px;padding:6px 10px;
+}
+.rotated{transform:rotate(180deg);}
+.status-bar{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  min-height:32px;
+}
+.message{
+  font-size:clamp(12px,3.4vw,15px);color:var(--sub);
+}
+.remaining-label{
+  text-align:center;font-size:11px;color:var(--sub);letter-spacing:0.5px;
+}
+.declare-btn{
+  padding:4px 10px;border-radius:20px;border:1px solid var(--accent2);
+  background:transparent;color:var(--accent2);font-size:12px;
+}
+.declare-btn:disabled{opacity:0.3;border-color:#555;color:#777;}
+.composite-row{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.composite-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.used-col{
+  display:flex;flex-direction:column;align-items:center;gap:6px;min-width:36px;max-height:240px;flex-wrap:wrap;
+}
+.used-chip{
+  width:32px;height:32px;border-radius:50%;
+  background:#333c50;color:#cfd6e6;font-size:20px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.hand-row{
+  display:flex;justify-content:center;gap:clamp(4px,1.6vw,8px);
+  min-height:44px;
+}
+.card{
+  min-width:44px;min-height:44px;
+  flex:1;max-width:64px;
+  aspect-ratio:1/1.1;
+  border-radius:10px;border:none;
+  font-size:clamp(18px,6vw,26px);font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+.p1-card{background:#fafafa;color:#12151f;}
+.p2-card{background:#232a3c;color:#f1f3f6;border:1px solid #3a4258;}
+.card.disabled{opacity:0.45;}
+.card.cpu-card{opacity:1;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-6px);}
+  40%{transform:translateX(6px);}
+  60%{transform:translateX(-4px);}
+  80%{transform:translateX(4px);}
+}
+.card.shake{animation:shake 0.35s ease;background:var(--danger) !important;color:#fff !important;}
+
+.center-area{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;
+  min-height:0;position:relative;
+}
+.composite-row{transition:transform 0.3s ease;}
+.composite-row.rot90{transform:translateX(18vw) rotate(90deg);}
+.composite-card{
+  width:clamp(48px,15vw,75px);
+  aspect-ratio:1/1.3;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(15px,5vw,26px);font-weight:800;
+  color:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.4);
+  background:#333;
+}
+.composite-card.level-1{background:linear-gradient(160deg,var(--lv1),#1b5e20);}
+.composite-card.level-2{background:linear-gradient(160deg,var(--lv2),#0d47a1);}
+.composite-card.level-3{background:linear-gradient(160deg,var(--lv3),#bf360c);}
+.composite-card.level-4{background:linear-gradient(160deg,var(--lv4),#8e0000);}
+.composite-label{
+  font-size:12px;color:var(--sub);letter-spacing:1px;
+}
+
+#anim-layer{position:fixed;inset:0;pointer-events:none;z-index:500;}
+.card-ghost{
+  position:fixed;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;font-weight:700;font-size:22px;
+  background:var(--accent);color:#fff;
+  transition:transform 0.5s ease,opacity 0.5s ease;
+}
+
+.overlay{
+  position:absolute;inset:0;z-index:400;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.6);gap:20px;
+}
+.overlay.hidden{display:none;}
+@keyframes pop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+#countdown-text{
+  font-size:clamp(70px,22vw,150px);font-weight:800;color:#fff;
+  text-shadow:0 4px 16px rgba(0,0,0,0.6);animation:pop 0.25s ease;
+}
+#round-text{font-size:clamp(30px,9vw,56px);font-weight:800;color:#fff;animation:pop 0.3s ease;}
+#result-overlay{background:rgba(0,0,0,0.75);}
+#result-text{font-size:clamp(40px,13vw,86px);font-weight:800;color:#fff;animation:pop 0.4s ease;text-align:center;}
+.result-btn{
+  padding:14px 26px;border:none;border-radius:12px;
+  background:var(--panel);color:var(--text);font-size:16px;font-weight:700;
+  border:1px solid #3a4258;
+}
+
+.pause-btn{
+  position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;z-index:350;
+  padding:6px 14px;border-radius:20px;border:1px solid #3a4258;
+  background:rgba(28,33,48,0.85);color:var(--text);font-size:13px;
+}
+#pause-overlay{z-index:600;background:rgba(0,0,0,0.75);}
+#pause-text{font-size:clamp(18px,5vw,24px);font-weight:700;color:#fff;text-align:center;padding:0 24px;}
+</style>
+</head>
+<body>
+
+<div id="title-screen" class="screen">
+  <h1>素数スピード</h1>
+  <p class="subtitle">Prime Number Speed</p>
+
+  <fieldset>
+    <legend>モード選択</legend>
+    <label><input type="radio" name="mode" value="single" checked> 1人用（CPU対戦）</label><br>
+    <label><input type="radio" name="mode" value="local2p"> 2人用（1台対戦）</label>
+  </fieldset>
+
+  <fieldset id="cpu-level-fieldset">
+    <legend>CPU強さ</legend>
+    <select id="cpu-level">
+      <option value="1">レベル1</option>
+      <option value="2">レベル2</option>
+      <option value="3" selected>レベル3</option>
+      <option value="4">レベル4</option>
+      <option value="5">レベル5</option>
+      <option value="MAX">MAX</option>
+    </select>
+  </fieldset>
+
+  <fieldset>
+    <legend>出題レベル（複数選択可）</legend>
+    <div class="level-grid">
+      <label><input type="checkbox" class="level-check" value="1" checked> レベル1</label>
+      <label><input type="checkbox" class="level-check" value="2" checked> レベル2</label>
+      <label><input type="checkbox" class="level-check" value="3"> レベル3</label>
+      <label><input type="checkbox" class="level-check" value="4"> レベル4</label>
+    </div>
+  </fieldset>
+
+  <label class="sound-toggle"><input type="checkbox" id="sound-toggle" checked> サウンド ON</label>
+
+  <button id="start-btn" class="start-btn">スタート</button>
+  <p id="level-warning" class="warning hidden">出題レベルを1つ以上選択してください</p>
+</div>
+
+<div id="game-screen" class="screen hidden">
+  <div id="anim-layer"></div>
+  <button id="pause-btn" class="pause-btn hidden">ポーズ</button>
+  <div id="board">
+    <div id="top-zone" class="player-zone">
+      <div id="p2-hand" class="hand-row"></div>
+      <div id="p2-remaining" class="remaining-label"></div>
+      <div class="status-bar">
+        <button id="p2-declare" class="declare-btn">10カウント宣言</button>
+        <div id="p2-message" class="message"></div>
+      </div>
+    </div>
+
+    <div class="center-area">
+      <div id="composite-row" class="composite-row">
+        <div id="p1-used" class="used-col"></div>
+        <div class="composite-wrap">
+          <div id="composite-card" class="composite-card"></div>
+          <div id="composite-label" class="composite-label"></div>
+        </div>
+        <div id="p2-used" class="used-col"></div>
+      </div>
+    </div>
+
+    <div id="bottom-zone" class="player-zone">
+      <div id="p1-hand" class="hand-row"></div>
+      <div id="p1-remaining" class="remaining-label"></div>
+      <div class="status-bar">
+        <button id="p1-declare" class="declare-btn">10カウント宣言</button>
+        <div id="p1-message" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="countdown-overlay" class="overlay hidden"><div id="countdown-text"></div></div>
+  <div id="round-overlay" class="overlay hidden"><div id="round-text"></div></div>
+  <div id="result-overlay" class="overlay hidden">
+    <div id="result-text"></div>
+    <div style="display:flex;gap:14px;">
+      <button id="retry-btn" class="result-btn">もう一度</button>
+      <button id="title-btn" class="result-btn">タイトルへ</button>
+    </div>
+  </div>
+  <div id="pause-overlay" class="overlay hidden">
+    <div id="pause-text">タイトル画面へ戻りますか？</div>
+    <div style="display:flex;gap:14px;">
+      <button id="pause-yes" class="result-btn">はい</button>
+      <button id="pause-no" class="result-btn">いいえ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================= DATA ================= */
+const PRIMES = [2,3,5,7,11];
+
+const LEVEL_DECKS = {
+  1: { cards:[27,14,70,35,45,18,12,10,42,20,49,30,28,15,25,21,6,8] },
+  2: { cards:[90,196,147,40,140,36,126,105,98,225,150,210,60,84] },
+  3: { cards:[735,484,605,441,1100,726,308,770,440,132,462,630,154,231,315,495,420,198,330,385] },
+  4: { cards:[1980,2310,8470,5250,2520,1320,1782,10500,2646,5544,3234,1960,2156,2450,1089,2475,1540,1210,4950,3388] }
+};
+
+const CPU_LEVELS = {
+  1:{minMs:1600,maxMs:2600,mistakeRate:0.22},
+  2:{minMs:1200,maxMs:2000,mistakeRate:0.15},
+  3:{minMs:850,maxMs:1500,mistakeRate:0.08},
+  4:{minMs:600,maxMs:1100,mistakeRate:0.04},
+  5:{minMs:400,maxMs:750,mistakeRate:0.01},
+  MAX:{minMs:220,maxMs:450,mistakeRate:0}
+};
+
+/* ================= STATE ================= */
+let state = {
+  mode:'single',
+  cpuLevel:3,
+  selectedLevels:[1,2],
+  soundOn:true,
+
+  phase:'TITLE',
+  round:0,
+  cardLevelMap:{},
+  compositeDeck:[],
+  compositeDiscard:[],
+  currentComposite:null,
+  remainingFactors:{},
+  roundUsed:{p1:[],p2:[]},
+  lastPlayed:{},
+
+  players:{
+    p1:{hand:[],deck:[],locked:false,lockReason:null,declared:false,beatenMessageUntil:0},
+    p2:{hand:[],deck:[],locked:false,lockReason:null,declared:false,beatenMessageUntil:0}
+  },
+
+  tenCount:{active:false,remaining:10,declarer:null,intervalId:null},
+  cpuTimerId:null,
+  inputLocked:true,
+  actionLockUntil:0,
+  winner:null
+};
+
+/* ================= UTIL ================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function factorize(n){
+  const result = {};
+  let value = n;
+  for (const p of PRIMES){
+    while (value % p === 0){
+      result[p] = (result[p]||0)+1;
+      value/=p;
+    }
+  }
+  return result;
+}
+function remainingTotal(){
+  return Object.values(state.remainingFactors).reduce((a,b)=>a+b,0);
+}
+function hasLegalMove(playerId){
+  const player = state.players[playerId];
+  if (player.locked) return false;
+  return player.hand.some(c => (state.remainingFactors[c]||0) > 0);
+}
+
+/* ================= AUDIO ================= */
+let audioCtx = null;
+function ensureAudio(){
+  if (!audioCtx){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) audioCtx = new Ctx();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function beep(freq, duration, type='sine', gain=0.15, delay=0){
+  if (!state.soundOn || !audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.frequency.value = freq;
+  osc.type = type;
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(gain, t0+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+duration);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0+duration+0.02);
+}
+function playSound(name){
+  if (!state.soundOn) return;
+  switch(name){
+    case 'countdown': beep(440,0.15); break;
+    case 'start': beep(880,0.3,'square'); break;
+    case 'correct': beep(660,0.12); beep(880,0.1,'sine',0.12,0.08); break;
+    case 'incorrect': beep(150,0.25,'sawtooth',0.18); break;
+    case 'beaten': beep(520,0.1,'sine',0.12); beep(520,0.1,'sine',0.1,0.12); break;
+    case 'roundTransition': beep(523,0.2); break;
+    case 'tencount': beep(500,0.1); break;
+    case 'tencountFinal': beep(700,0.25,'square'); break;
+    case 'declare': beep(400,0.15,'triangle'); break;
+    case 'win': beep(784,0.15); beep(988,0.15,'sine',0.15,0.15); beep(1175,0.25,'sine',0.15,0.3); break;
+    case 'lose': beep(300,0.3,'sawtooth'); beep(220,0.4,'sawtooth',0.15,0.2); break;
+  }
+}
+
+/* ================= DECK BUILDING ================= */
+function buildCompositeDeck(){
+  let all = [];
+  state.cardLevelMap = {};
+  state.selectedLevels.forEach(lv=>{
+    LEVEL_DECKS[lv].cards.forEach(v=>{ all.push(v); state.cardLevelMap[v]=lv; });
+  });
+  state.compositeDeck = shuffle(all);
+  state.compositeDiscard = [];
+}
+function computeCounts(){
+  const includeHigh = state.selectedLevels.includes(3) || state.selectedLevels.includes(4);
+  return includeHigh ? {2:6,3:5,5:4,7:4,11:4} : {2:6,3:5,5:4,7:4,11:0};
+}
+function buildPrimeDeck(counts){
+  let cards = [];
+  PRIMES.forEach(p=>{ for(let i=0;i<counts[p];i++) cards.push(p); });
+  cards = shuffle(cards);
+  cards.push('FINISH');
+  return cards;
+}
+function makePlayer(counts){
+  const deck = buildPrimeDeck(counts);
+  const hand = deck.splice(0,5);
+  return { hand, deck, locked:false, lockReason:null, declared:false, beatenMessageUntil:0 };
+}
+
+/* ================= ROUND / COMPOSITE FLOW ================= */
+function nextComposite(){
+  if (state.currentComposite !== null) state.compositeDiscard.push(state.currentComposite);
+  if (state.compositeDeck.length === 0){
+    state.compositeDeck = shuffle(state.compositeDiscard);
+    state.compositeDiscard = [];
+  }
+  let next = state.compositeDeck.shift();
+  const lastUsed = state.compositeDiscard[state.compositeDiscard.length-1];
+  if (next === lastUsed && state.compositeDeck.length > 0){
+    state.compositeDeck.push(next);
+    next = state.compositeDeck.shift();
+  }
+  state.currentComposite = next;
+  state.remainingFactors = factorize(next);
+}
+
+function checkRoundEnd(){
+  if (state.phase !== 'PLAYING') return;
+  if (remainingTotal() === 0){ triggerRoundTransition(); return; }
+  if (!hasLegalMove('p1') && !hasLegalMove('p2')){ triggerRoundTransition(); return; }
+}
+
+function triggerRoundTransition(){
+  if (state.phase !== 'PLAYING') return;
+  state.phase = 'ROUND_TRANSITION';
+  state.inputLocked = true;
+  clearCPUTimer();
+  clearTenCountTimer();
+  playSound('roundTransition');
+  state.round++;
+  document.getElementById('round-text').textContent = 'ラウンド' + state.round;
+  document.getElementById('round-overlay').classList.remove('hidden');
+  render();
+  setTimeout(()=>{
+    document.getElementById('round-overlay').classList.add('hidden');
+    state.players.p1.locked = false; state.players.p1.lockReason = null; state.players.p1.declared = false; state.players.p1.beatenMessageUntil = 0;
+    state.players.p2.locked = false; state.players.p2.lockReason = null; state.players.p2.declared = false; state.players.p2.beatenMessageUntil = 0;
+    state.roundUsed = {p1:[],p2:[]};
+    state.lastPlayed = {};
+    state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
+    nextComposite();
+    state.phase = 'PLAYING';
+    state.inputLocked = false;
+    render();
+    if (state.mode === 'single') scheduleCPU();
+  }, 1000);
+}
+
+function refillHand(playerId, index){
+  const player = state.players[playerId];
+  if (player.deck.length === 0){
+    player.hand.splice(index,1);
+    return;
+  }
+  const next = player.deck[0];
+  if (next === 'FINISH'){
+    player.hand.splice(index,1);
+    endGame(playerId);
+    return;
+  }
+  player.hand[index] = player.deck.shift();
+}
+
+function endGame(winnerId){
+  state.phase = 'GAME_OVER';
+  state.winner = winnerId;
+  state.inputLocked = true;
+  clearCPUTimer();
+  clearTenCountTimer();
+  if (state.mode === 'single'){
+    playSound(winnerId === 'p1' ? 'win' : 'lose');
+  } else {
+    playSound('win');
+  }
+  render();
+  setTimeout(()=> showResultScreen(winnerId), 900);
+}
+
+/* ================= 10-COUNT ================= */
+function clearTenCountTimer(){
+  if (state.tenCount.intervalId){ clearInterval(state.tenCount.intervalId); state.tenCount.intervalId = null; }
+}
+function declareTenCount(playerId){
+  if (state.phase !== 'PLAYING' || state.inputLocked || state.tenCount.active) return;
+  const player = state.players[playerId];
+  player.locked = true;
+  player.lockReason = 'declared';
+  player.declared = true;
+  state.tenCount.active = true;
+  state.tenCount.remaining = 10;
+  state.tenCount.declarer = playerId;
+  playSound('declare');
+  render();
+  state.tenCount.intervalId = setInterval(tickTenCount, 1000);
+}
+function tickTenCount(){
+  state.tenCount.remaining--;
+  if (state.tenCount.remaining >= 1 && state.tenCount.remaining <= 5){
+    playSound(state.tenCount.remaining === 1 ? 'tencountFinal' : 'tencount');
+  }
+  if (state.tenCount.remaining <= 0){
+    clearTenCountTimer();
+    render();
+    triggerRoundTransition();
+  } else {
+    render();
+  }
+}
+
+/* ================= CARD PLAY ================= */
+function spawnGhost(el, type){
+  const rect = el.getBoundingClientRect();
+  const ghost = document.createElement('div');
+  ghost.className = 'card-ghost';
+  ghost.textContent = el.textContent;
+  ghost.style.left = rect.left + 'px';
+  ghost.style.top = rect.top + 'px';
+  ghost.style.width = rect.width + 'px';
+  ghost.style.height = rect.height + 'px';
+  document.getElementById('anim-layer').appendChild(ghost);
+  requestAnimationFrame(()=>{
+    const cx = window.innerWidth/2 - (rect.left + rect.width/2);
+    const cy = window.innerHeight/2 - (rect.top + rect.height/2);
+    ghost.style.transform = `translate(${cx}px, ${cy}px) scale(0.55)`;
+    ghost.style.opacity = '0';
+  });
+  setTimeout(()=> ghost.remove(), 520);
+}
+
+function playCard(playerId, index){
+  if (state.phase !== 'PLAYING' || state.inputLocked) return;
+  if (Date.now() < state.actionLockUntil) return;
+  const player = state.players[playerId];
+  if (player.locked) return;
+  const prime = player.hand[index];
+  if (prime === undefined) return;
+  state.actionLockUntil = Date.now() + 120;
+
+  const cardEl = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
+
+  if ((state.remainingFactors[prime]||0) > 0){
+    if (cardEl) spawnGhost(cardEl, 'correct');
+    playSound('correct');
+    state.remainingFactors[prime]--;
+    state.roundUsed[playerId].push(prime);
+    state.lastPlayed[prime] = { time: Date.now(), playerId };
+    refillHand(playerId, index);
+    if (state.phase === 'PLAYING') checkRoundEnd();
+    render();
+    return;
+  }
+
+  const beatenBy = state.lastPlayed[prime];
+  if (beatenBy && beatenBy.playerId !== playerId && (Date.now() - beatenBy.time) <= 1000){
+    playSound('beaten');
+    player.beatenMessageUntil = Date.now() + 1200;
+    render();
+    setTimeout(()=>{ render(); }, 1200);
+    return;
+  }
+
+  playSound('incorrect');
+  player.locked = true;
+  player.lockReason = 'mistake';
+  checkRoundEnd();
+  render();
+  if (state.phase === 'PLAYING'){
+    const newEl = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
+    if (newEl){
+      newEl.classList.add('shake');
+      setTimeout(()=> newEl.classList.remove('shake'), 350);
+    }
+  }
+}
+
+/* ================= CPU ================= */
+function clearCPUTimer(){
+  if (state.cpuTimerId){ clearTimeout(state.cpuTimerId); state.cpuTimerId = null; }
+}
+function scheduleCPU(){
+  clearCPUTimer();
+  if (state.phase !== 'PLAYING' || state.players.p2.locked) return;
+  const cfg = CPU_LEVELS[state.cpuLevel];
+  const delay = cfg.minMs + Math.random()*(cfg.maxMs - cfg.minMs);
+  state.cpuTimerId = setTimeout(cpuAct, delay);
+}
+function cpuAct(){
+  state.cpuTimerId = null;
+  if (state.phase !== 'PLAYING' || state.inputLocked) return;
+  const player = state.players.p2;
+  if (player.locked) return;
+  const hand = player.hand;
+  const legalIdx = hand.map((c,i)=>i).filter(i => (state.remainingFactors[hand[i]]||0) > 0);
+  const illegalIdx = hand.map((c,i)=>i).filter(i => (state.remainingFactors[hand[i]]||0) === 0);
+  const cfg = CPU_LEVELS[state.cpuLevel];
+
+  let idx = null;
+  if (legalIdx.length > 0 && (illegalIdx.length === 0 || Math.random() >= cfg.mistakeRate)){
+    idx = legalIdx[Math.floor(Math.random()*legalIdx.length)];
+  } else if (illegalIdx.length > 0){
+    idx = illegalIdx[Math.floor(Math.random()*illegalIdx.length)];
+  } else if (legalIdx.length > 0){
+    idx = legalIdx[Math.floor(Math.random()*legalIdx.length)];
+  }
+
+  if (idx !== null) playCard('p2', idx);
+
+  if (state.phase === 'PLAYING' && !state.players.p2.locked){
+    scheduleCPU();
+  }
+}
+
+/* ================= RENDER ================= */
+function compositeLevelOf(v){ return state.cardLevelMap[v] || 1; }
+
+function render(){
+  renderHandRow('p1','p1-hand');
+  renderHandRow('p2','p2-hand');
+  renderComposite();
+  renderUsed();
+  renderRemaining();
+  renderStatus();
+}
+
+function renderRemaining(){
+  ['p1','p2'].forEach(pid=>{
+    const player = state.players[pid];
+    const count = Math.max(0, player.deck.length - 1);
+    document.getElementById(pid + '-remaining').textContent = '山札 残り' + count + '枚';
+  });
+}
+
+function renderHandRow(playerId, containerId){
+  const container = document.getElementById(containerId);
+  const player = state.players[playerId];
+  container.innerHTML = '';
+  const isCpu = (playerId === 'p2' && state.mode === 'single');
+  player.hand.forEach((val, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'card ' + (playerId === 'p1' ? 'p1-card' : 'p2-card') + (isCpu ? ' cpu-card' : '');
+    btn.textContent = val;
+    btn.dataset.player = playerId;
+    btn.dataset.index = idx;
+    const disabled = state.phase !== 'PLAYING' || state.inputLocked || player.locked || isCpu;
+    if (disabled) btn.classList.add('disabled');
+    if (!isCpu){
+      btn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); playCard(playerId, idx); });
+    }
+    container.appendChild(btn);
+  });
+}
+
+function renderComposite(){
+  const el = document.getElementById('composite-card');
+  const label = document.getElementById('composite-label');
+  if (state.currentComposite == null){
+    el.textContent = '';
+    el.className = 'composite-card';
+    label.textContent = '';
+    return;
+  }
+  const lv = compositeLevelOf(state.currentComposite);
+  el.textContent = state.currentComposite;
+  el.className = 'composite-card level-' + lv;
+  label.textContent = 'レベル' + lv;
+}
+
+function renderUsed(){
+  ['p1','p2'].forEach(pid=>{
+    const row = document.getElementById(pid + '-used');
+    row.innerHTML = '';
+    state.roundUsed[pid].forEach(p=>{
+      const chip = document.createElement('div');
+      chip.className = 'used-chip';
+      chip.textContent = p;
+      row.appendChild(chip);
+    });
+  });
+}
+
+function statusMessage(playerId){
+  const player = state.players[playerId];
+  if (player.beatenMessageUntil && Date.now() < player.beatenMessageUntil) return 'この数は先に出された!';
+  if (state.tenCount.active && state.tenCount.declarer === playerId) return '10カウント宣言中';
+  if (state.tenCount.active && state.tenCount.declarer !== playerId) return 'あと ' + state.tenCount.remaining;
+  if (player.lockReason === 'mistake') return 'お手つき! 次のカードまで待とう';
+  if (state.phase === 'GAME_OVER') return '';
+  return '素数を出そう!';
+}
+
+function renderStatus(){
+  document.getElementById('p1-message').textContent = statusMessage('p1');
+  document.getElementById('p2-message').textContent = state.mode === 'single' ? '' : statusMessage('p2');
+
+  const declareEnabled = state.phase === 'PLAYING' && !state.inputLocked && !state.tenCount.active;
+  const p1Btn = document.getElementById('p1-declare');
+  p1Btn.disabled = !declareEnabled;
+
+  const p2Btn = document.getElementById('p2-declare');
+  if (state.mode === 'single'){
+    p2Btn.classList.add('hidden');
+  } else {
+    p2Btn.classList.remove('hidden');
+    p2Btn.disabled = !declareEnabled;
+  }
+
+  document.getElementById('top-zone').classList.toggle('rotated', state.mode === 'local2p');
+  document.getElementById('composite-row').classList.toggle('rot90', state.mode === 'local2p');
+
+  document.getElementById('pause-btn').classList.toggle('hidden', state.phase !== 'PLAYING');
+}
+
+/* ================= SCREEN / GAME FLOW ================= */
+function showScreen(name){
+  document.getElementById('title-screen').classList.toggle('hidden', name !== 'title');
+  document.getElementById('game-screen').classList.toggle('hidden', name !== 'game');
+}
+
+function runStartCountdown(cb){
+  const seq = ['3','2','1','START!'];
+  const overlay = document.getElementById('countdown-overlay');
+  const text = document.getElementById('countdown-text');
+  overlay.classList.remove('hidden');
+  let i = 0;
+  function step(){
+    text.textContent = seq[i];
+    text.style.animation = 'none';
+    void text.offsetWidth;
+    text.style.animation = '';
+    playSound(i === seq.length-1 ? 'start' : 'countdown');
+    i++;
+    if (i < seq.length){
+      setTimeout(step, 700);
+    } else {
+      setTimeout(()=>{
+        overlay.classList.add('hidden');
+        cb();
+      }, 800);
+    }
+  }
+  step();
+}
+
+function syncSettingsFromUI(){
+  state.mode = document.querySelector('input[name="mode"]:checked').value;
+  let cpuLevel = document.getElementById('cpu-level').value;
+  state.cpuLevel = (cpuLevel === 'MAX') ? 'MAX' : parseInt(cpuLevel,10);
+  state.selectedLevels = Array.from(document.querySelectorAll('.level-check:checked')).map(el=>parseInt(el.value,10));
+  state.soundOn = document.getElementById('sound-toggle').checked;
+}
+function saveSettings(){
+  try{
+    localStorage.setItem('primeSpeedSettings', JSON.stringify({
+      mode: state.mode, cpuLevel: state.cpuLevel,
+      selectedLevels: state.selectedLevels, soundOn: state.soundOn
+    }));
+  }catch(e){}
+}
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem('primeSpeedSettings');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.mode) document.querySelector(`input[name="mode"][value="${s.mode}"]`).checked = true;
+    if (s.cpuLevel !== undefined) document.getElementById('cpu-level').value = s.cpuLevel;
+    if (Array.isArray(s.selectedLevels)){
+      document.querySelectorAll('.level-check').forEach(el=>{
+        el.checked = s.selectedLevels.includes(parseInt(el.value,10));
+      });
+    }
+    if (typeof s.soundOn === 'boolean') document.getElementById('sound-toggle').checked = s.soundOn;
+  }catch(e){}
+}
+
+function startGame(){
+  syncSettingsFromUI();
+  saveSettings();
+
+  buildCompositeDeck();
+  const counts = computeCounts();
+  state.players.p1 = makePlayer(counts);
+  state.players.p2 = makePlayer(counts);
+  state.round = 1;
+  state.roundUsed = {p1:[],p2:[]};
+  state.lastPlayed = {};
+  state.winner = null;
+  state.currentComposite = null;
+  state.remainingFactors = {};
+  state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
+  clearCPUTimer();
+  clearTenCountTimer();
+
+  state.phase = 'START_COUNTDOWN';
+  state.inputLocked = true;
+
+  document.getElementById('result-overlay').classList.add('hidden');
+  showScreen('game');
+  render();
+
+  runStartCountdown(()=>{
+    nextComposite();
+    state.phase = 'PLAYING';
+    state.inputLocked = false;
+    render();
+    if (state.mode === 'single') scheduleCPU();
+  });
+}
+
+function showResultScreen(winnerId){
+  const text = document.getElementById('result-text');
+  if (state.mode === 'single'){
+    text.textContent = winnerId === 'p1' ? '勝ち！' : '負け…';
+  } else {
+    text.textContent = (winnerId === 'p1' ? '1P' : '2P') + '勝ち';
+  }
+  document.getElementById('result-overlay').classList.remove('hidden');
+}
+
+function goToTitle(){
+  clearCPUTimer();
+  clearTenCountTimer();
+  state.phase = 'TITLE';
+  document.getElementById('result-overlay').classList.add('hidden');
+  showScreen('title');
+}
+
+function openPauseMenu(){
+  if (state.phase !== 'PLAYING') return;
+  state.inputLocked = true;
+  clearCPUTimer();
+  clearTenCountTimer();
+  document.getElementById('pause-overlay').classList.remove('hidden');
+}
+function resumeFromPause(){
+  document.getElementById('pause-overlay').classList.add('hidden');
+  state.inputLocked = false;
+  if (state.mode === 'single') scheduleCPU();
+  if (state.tenCount.active){
+    state.tenCount.intervalId = setInterval(tickTenCount, 1000);
+  }
+}
+function confirmPauseToTitle(){
+  clearCPUTimer();
+  clearTenCountTimer();
+  document.getElementById('pause-overlay').classList.add('hidden');
+  goToTitle();
+}
+
+/* ================= INIT ================= */
+function updateLevelWarning(){
+  const anyChecked = document.querySelectorAll('.level-check:checked').length > 0;
+  document.getElementById('level-warning').classList.toggle('hidden', anyChecked);
+  document.getElementById('start-btn').disabled = !anyChecked;
+}
+function updateCpuFieldsetVisibility(){
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  document.getElementById('cpu-level-fieldset').classList.toggle('hidden', mode !== 'single');
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadSettings();
+  updateLevelWarning();
+  updateCpuFieldsetVisibility();
+
+  document.querySelectorAll('input[name="mode"]').forEach(el=>{
+    el.addEventListener('change', updateCpuFieldsetVisibility);
+  });
+  document.querySelectorAll('.level-check').forEach(el=>{
+    el.addEventListener('change', updateLevelWarning);
+  });
+
+  document.getElementById('start-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    if (document.getElementById('start-btn').disabled) return;
+    ensureAudio();
+    startGame();
+  });
+
+  document.getElementById('p1-declare').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    declareTenCount('p1');
+  });
+  document.getElementById('p2-declare').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    declareTenCount('p2');
+  });
+
+  document.getElementById('retry-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    ensureAudio();
+    startGame();
+  });
+  document.getElementById('title-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    goToTitle();
+  });
+
+  document.getElementById('pause-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    openPauseMenu();
+  });
+  document.getElementById('pause-yes').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    confirmPauseToTitle();
+  });
+  document.getElementById('pause-no').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    resumeFromPause();
+  });
+});
+</script>
+</body>
+</html>
