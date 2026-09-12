@@ -235,7 +235,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   padding-bottom:env(safe-area-inset-bottom);
   overflow:hidden;
   position:relative;
-  touch-action:none;
+  touch-action:manipulation;
   user-select:none;
 }
 #board{
@@ -1774,6 +1774,13 @@ function updateCpuFieldsetVisibility(){
   const mode = selected ? selected.dataset.mode : 'single';
   document.getElementById('cpu-level-fieldset').classList.toggle('hidden', mode !== 'single');
 }
+
+let lastTouchEndTime = 0;
+document.addEventListener('touchend', (e)=>{
+  const now = Date.now();
+  if (now - lastTouchEndTime <= 350) e.preventDefault();
+  lastTouchEndTime = now;
+}, { passive:false });
 
 document.addEventListener('DOMContentLoaded', ()=>{
   initTitleBackground();
