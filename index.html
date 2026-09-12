@@ -195,6 +195,29 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .start-btn:disabled{opacity:0.4;}
 .warning{color:var(--danger);font-size:13px;margin:-6px 0 0;}
 
+.handicap-label{
+  text-align:center;font-size:15px;font-weight:700;color:var(--text);
+  margin-bottom:8px;
+}
+.handicap-slider{
+  width:100%;display:block;
+  -webkit-appearance:none;appearance:none;
+  height:6px;border-radius:3px;
+  background:linear-gradient(90deg,#1565c0,#2c3244 50%,#c62828);
+  outline:none;margin:6px 0 2px;
+}
+.handicap-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:26px;height:26px;border-radius:50%;
+  background:#fff;border:3px solid var(--accent2);
+  cursor:pointer;
+}
+.handicap-slider::-moz-range-thumb{
+  width:26px;height:26px;border-radius:50%;
+  background:#fff;border:3px solid var(--accent2);
+  cursor:pointer;
+}
+
 /* ---------- Help screen ---------- */
 #help-screen{
   flex-direction:column;
@@ -693,6 +716,12 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     </div>
   </fieldset>
 
+  <fieldset id="handicap-fieldset" class="hidden">
+    <legend>ハンデ設定</legend>
+    <div id="handicap-label" class="handicap-label">1P：18枚　2P：18枚</div>
+    <input type="range" id="handicap-slider" class="handicap-slider" min="10" max="26" step="1" value="18">
+  </fieldset>
+
   <fieldset id="cpu-level-fieldset">
     <legend>CPU強さ</legend>
     <div class="btn-row">
@@ -1081,6 +1110,7 @@ let state = {
   cpuLevel:3,
   selectedLevels:[1,2],
   timeAttackLevel:1,
+  handicapP1Count:18,
   soundOn:true,
 
   phase:'TITLE',
@@ -1280,6 +1310,34 @@ function makePlayer(counts){
   const deck = buildPrimeDeck(counts);
   const hand = deck.splice(0,5);
   return { hand, deck, locked:false, lockReason:null, declared:false, beatenMessageUntil:0 };
+}
+
+function finalizePlayerCards(cards){
+  const deck = shuffle(cards);
+  deck.push('FINISH');
+  const hand = deck.splice(0,5);
+  return { hand, deck, locked:false, lockReason:null, declared:false, beatenMessageUntil:0 };
+}
+
+function makeLocal2pPlayers(counts, p1Count){
+  const p1Cards = [];
+  PRIMES.forEach(p=>{ for(let i=0;i<counts[p];i++) p1Cards.push(p); });
+  const p2Cards = p1Cards.slice();
+  // Redistribute from the side with the smaller target count to the side with the larger one,
+  // starting from the balanced 18/18 split so both pools keep the same overall prime-type ratio.
+  const diff = p1Count - p1Cards.length;
+  if (diff > 0){
+    for (let i=0;i<diff;i++){
+      const idx = Math.floor(Math.random()*p2Cards.length);
+      p1Cards.push(p2Cards.splice(idx,1)[0]);
+    }
+  } else if (diff < 0){
+    for (let i=0;i<-diff;i++){
+      const idx = Math.floor(Math.random()*p1Cards.length);
+      p2Cards.push(p1Cards.splice(idx,1)[0]);
+    }
+  }
+  return { p1: finalizePlayerCards(p1Cards), p2: finalizePlayerCards(p2Cards) };
 }
 
 /* ================= ROUND / COMPOSITE FLOW ================= */
@@ -2198,13 +2256,15 @@ function syncSettingsFromUI(){
   } else {
     state.selectedLevels = Array.from(document.querySelectorAll('.level-toggle-btn.selected')).map(el=>parseInt(el.dataset.value,10));
   }
+  state.handicapP1Count = parseInt(document.getElementById('handicap-slider').value,10);
   state.soundOn = document.getElementById('sound-toggle-btn').dataset.on !== 'false';
 }
 function saveSettings(){
   try{
     localStorage.setItem('primeSpeedSettings', JSON.stringify({
       mode: state.mode, cpuLevel: state.cpuLevel,
-      selectedLevels: state.selectedLevels, timeAttackLevel: state.timeAttackLevel, soundOn: state.soundOn
+      selectedLevels: state.selectedLevels, timeAttackLevel: state.timeAttackLevel,
+      handicapP1Count: state.handicapP1Count, soundOn: state.soundOn
     }));
   }catch(e){}
 }
@@ -2229,6 +2289,11 @@ function loadSettings(){
     }
     if (Array.isArray(s.selectedLevels)) state.selectedLevels = s.selectedLevels;
     if (typeof s.timeAttackLevel === 'number') state.timeAttackLevel = s.timeAttackLevel;
+    if (typeof s.handicapP1Count === 'number'){
+      state.handicapP1Count = s.handicapP1Count;
+      document.getElementById('handicap-slider').value = s.handicapP1Count;
+    }
+    updateHandicapLabel();
     renderLevelToggleButtons();
     if (typeof s.soundOn === 'boolean'){
       const btn = document.getElementById('sound-toggle-btn');
@@ -2245,8 +2310,14 @@ function startGame(){
 
   buildCompositeDeck();
   const counts = computeCounts();
-  state.players.p1 = makePlayer(counts);
-  state.players.p2 = makePlayer(counts);
+  if (state.mode === 'local2p'){
+    const players = makeLocal2pPlayers(counts, state.handicapP1Count);
+    state.players.p1 = players.p1;
+    state.players.p2 = players.p2;
+  } else {
+    state.players.p1 = makePlayer(counts);
+    state.players.p2 = makePlayer(counts);
+  }
   state.round = 1;
   state.roundUsed = {p1:[],p2:[]};
   state.lastPlayed = {};
@@ -2402,6 +2473,15 @@ function updateCpuFieldsetVisibility(){
   const mode = currentUIMode();
   document.getElementById('cpu-level-fieldset').classList.toggle('hidden', mode !== 'single');
 }
+function updateHandicapFieldsetVisibility(){
+  const mode = currentUIMode();
+  document.getElementById('handicap-fieldset').classList.toggle('hidden', mode !== 'local2p');
+}
+function updateHandicapLabel(){
+  const p1 = parseInt(document.getElementById('handicap-slider').value,10);
+  const p2 = 36 - p1;
+  document.getElementById('handicap-label').textContent = `1P：${p1}枚　2P：${p2}枚`;
+}
 function renderLevelToggleButtons(){
   const mode = currentUIMode();
   document.querySelectorAll('.level-toggle-btn').forEach(btn=>{
@@ -2428,6 +2508,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderLevelToggleButtons();
   updateLevelWarning();
   updateCpuFieldsetVisibility();
+  updateHandicapFieldsetVisibility();
+  updateHandicapLabel();
 
   document.querySelectorAll('.mode-btn').forEach(btn=>{
     btn.addEventListener('pointerdown', (e)=>{
@@ -2435,10 +2517,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
       document.querySelectorAll('.mode-btn').forEach(b=> b.classList.remove('selected'));
       btn.classList.add('selected');
       updateCpuFieldsetVisibility();
+      updateHandicapFieldsetVisibility();
       renderLevelToggleButtons();
       updateLevelWarning();
     });
   });
+  document.getElementById('handicap-slider').addEventListener('input', updateHandicapLabel);
   document.querySelectorAll('.cpu-level-btn').forEach(btn=>{
     btn.addEventListener('pointerdown', (e)=>{
       e.preventDefault();
