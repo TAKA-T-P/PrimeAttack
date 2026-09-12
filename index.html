@@ -1362,7 +1362,9 @@ function scheduleCPU(){
   clearCPUTimer();
   if (state.phase !== 'PLAYING' || state.players.p2.locked || state.compositeHidden) return;
   const cfg = CPU_LEVELS[state.cpuLevel];
-  const delay = cfg.minMs + Math.random()*(cfg.maxMs - cfg.minMs);
+  const compositeLv = compositeLevelOf(state.currentComposite);
+  const hardBonus = (compositeLv === 3 || compositeLv === 4) ? 100 : 0;
+  const delay = cfg.minMs + hardBonus + Math.random()*(cfg.maxMs - cfg.minMs);
   state.cpuTimerId = setTimeout(cpuAct, delay);
 }
 function cpuAct(){
