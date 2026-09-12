@@ -1818,7 +1818,7 @@ function handleTimeAttackMistake(prime){
 function updateTimeAttackHintButton(){
   const ta = state.timeAttack;
   const btn = document.getElementById('ta-hint-btn');
-  const enabled = ta.status === 'playing' && !ta.inputLocked && ta.enteredFactors.length > 0 && ta.hintCount < 3;
+  const enabled = ta.status === 'playing' && !ta.inputLocked && ta.hintCount < 3;
   btn.disabled = !enabled;
   document.getElementById('ta-hint-uses-left').textContent = '残り' + Math.max(0, 3 - ta.hintCount) + '回';
 }
@@ -1838,8 +1838,18 @@ function showTimeAttackHintToast(){
 function useTimeAttackHint(){
   const ta = state.timeAttack;
   if (ta.status !== 'playing' || ta.inputLocked) return;
-  if (ta.enteredFactors.length === 0) return;
   if (ta.hintCount >= 3) return;
+
+  if (ta.enteredFactors.length === 0){
+    // No correct factor entered yet: auto-tap the largest remaining prime factor first.
+    const remainingPrimes = Object.keys(ta.remainingFactors)
+      .map(p => parseInt(p,10))
+      .filter(p => ta.remainingFactors[p] > 0);
+    if (remainingPrimes.length === 0) return;
+    handleTimeAttackPrime(Math.max(...remainingPrimes));
+    if (ta.status !== 'playing' || ta.inputLocked) return; // question completed via the auto-tap; nothing more to show
+  }
+
   ta.hintCount++;
   ta.hintShown = true;
   document.getElementById('ta-hint-remaining').textContent = '残り' + timeAttackHintRemainingValue();
