@@ -1329,7 +1329,7 @@ function playCard(playerId, index){
   }
 
   const beatenBy = state.lastPlayed[prime];
-  if (beatenBy && beatenBy.playerId !== playerId && (Date.now() - beatenBy.time) <= 1000){
+  if (beatenBy && beatenBy.playerId !== playerId && (Date.now() - beatenBy.time) <= 1500){
     playSound('beaten');
     player.beatenMessageUntil = Date.now() + 1200;
     render();
