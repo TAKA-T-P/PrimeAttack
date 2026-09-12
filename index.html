@@ -609,6 +609,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 .ta-feedback.show{opacity:1;}
 .ta-feedback.correct{color:#66bb6a;font-size:clamp(44px,15vw,72px);}
+.ta-feedback.correct.show{animation:pop 0.3s ease;}
 .ta-feedback.mistake{color:var(--danger);}
 .ta-hand-row{
   flex:0 0 auto;
@@ -617,6 +618,15 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 .ta-hand-row .card{flex:1;max-width:64px;min-width:40px;}
 .ta-result-time{font-size:clamp(22px,7vw,38px);font-weight:800;color:#fff;}
+.ta-result-time.ta-new-best{
+  color:#ffd54f;
+  animation:taBestGlow 1s ease-in-out infinite;
+}
+@keyframes taBestGlow{
+  0%,100%{text-shadow:0 0 10px rgba(255,213,79,0.6),0 0 18px rgba(255,213,79,0.4);}
+  50%{text-shadow:0 0 18px rgba(255,213,79,0.95),0 0 34px rgba(255,213,79,0.75);}
+}
+.ta-best-line{font-size:clamp(16px,4.5vw,22px);font-weight:700;color:var(--sub);}
 .ta-result-detail{font-size:clamp(12px,3.4vw,14px);color:var(--sub);}
 #ta-clear-overlay,#ta-gameover-overlay{background:rgba(0,0,0,0.85);}
 </style>
@@ -852,6 +862,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div id="ta-clear-text">CLEAR!</div>
       <div>10問正解！</div>
       <div id="ta-clear-time" class="ta-result-time"></div>
+      <div id="ta-clear-best" class="ta-best-line"></div>
       <div id="ta-clear-detail" class="ta-result-detail"></div>
       <div class="result-btn-row">
         <button id="ta-clear-retry-btn" class="result-btn">もう一度</button>
@@ -1039,6 +1050,8 @@ let state = {
 
   maxUnlocked:false,
 
+  timeAttackBest:{},
+
   timeAttack:{
     status:'idle', // idle | countdown | playing | clear | gameOver
     questions:[],
@@ -1049,8 +1062,6 @@ let state = {
     remainingFactors:{},
     enteredFactors:[],
     startTime:null,
-    pausedAt:null,
-    totalPausedDuration:0,
     finalTimeMs:null,
     inputLocked:false,
     timerIntervalId:null,
@@ -1156,6 +1167,7 @@ function playSound(name){
     case 'countdown': beep(440,0.15); break;
     case 'start': beep(880,0.3,'square'); break;
     case 'correct': beep(660,0.12); beep(880,0.1,'sine',0.12,0.08); break;
+    case 'taCorrect': beep(660,0.1,'sine',0.15,0); beep(880,0.1,'sine',0.15,0.08); beep(1046.5,0.16,'sine',0.18,0.16); break;
     case 'incorrect': beep(150,0.25,'sawtooth',0.18); break;
     case 'beaten': beep(520,0.1,'sine',0.12); beep(520,0.1,'sine',0.1,0.12); break;
     case 'roundTransition': beep(523,0.2); break;
@@ -1585,9 +1597,8 @@ function prepareTimeAttackQuestions(level){
 function getTimeAttackElapsedMs(){
   const ta = state.timeAttack;
   if (ta.startTime == null) return 0;
-  let paused = ta.totalPausedDuration;
-  if (ta.pausedAt != null) paused += performance.now() - ta.pausedAt;
-  const raw = performance.now() - ta.startTime - paused;
+  // Pausing intentionally does NOT stop this clock (anti-cheat: no free thinking time).
+  const raw = performance.now() - ta.startTime;
   return raw + ta.mistakeCount*10000;
 }
 
@@ -1615,8 +1626,6 @@ function resetTimeAttackRun(){
     remainingFactors:{},
     enteredFactors:[],
     startTime:null,
-    pausedAt:null,
-    totalPausedDuration:0,
     finalTimeMs:null,
     inputLocked:false,
     timerIntervalId:null,
@@ -1636,6 +1645,7 @@ function startTimeAttack(){
   document.getElementById('ta-gameover-overlay').classList.add('hidden');
   document.getElementById('ta-pause-overlay').classList.add('hidden');
   document.getElementById('ta-countdown-overlay').classList.add('hidden');
+  hideTimeAttackFeedback();
 
   showScreen('timeattack');
   renderTimeAttack();
@@ -1643,8 +1653,6 @@ function startTimeAttack(){
   runStartCountdown(()=>{
     ta.status = 'playing';
     ta.startTime = performance.now();
-    ta.totalPausedDuration = 0;
-    ta.pausedAt = null;
     showNextTimeAttackQuestion();
     startTimeAttackTimerLoop();
   }, 'ta-countdown-overlay', 'ta-countdown-content', 'ta-countdown-text', false);
@@ -1667,12 +1675,13 @@ function handleTimeAttackPrime(prime){
   if ((ta.remainingFactors[prime]||0) > 0){
     ta.remainingFactors[prime]--;
     ta.enteredFactors.push(prime);
-    playSound('correct');
     document.getElementById('ta-entered').textContent = ta.enteredFactors.join(' × ');
     const done = Object.values(ta.remainingFactors).every(v=>v===0);
     if (done){
       ta.inputLocked = true;
       handleTimeAttackCorrect();
+    } else {
+      playSound('correct');
     }
     return;
   }
@@ -1682,6 +1691,7 @@ function handleTimeAttackPrime(prime){
 function handleTimeAttackCorrect(){
   const ta = state.timeAttack;
   ta.correctCount++;
+  playSound('taCorrect');
   showTimeAttackFeedback('correct', '正解！');
   if (ta.correctCount >= 10){
     ta.finalTimeMs = getTimeAttackElapsedMs();
@@ -1719,11 +1729,28 @@ function handleTimeAttackMistake(prime){
   }, 500);
 }
 
+function loadTimeAttackBest(){
+  try{
+    const raw = localStorage.getItem('primeSpeedTimeAttackBest');
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveTimeAttackBest(){
+  try{ localStorage.setItem('primeSpeedTimeAttackBest', JSON.stringify(state.timeAttackBest)); }catch(e){}
+}
+
 function finishTimeAttack(){
   const ta = state.timeAttack;
   ta.status = 'clear';
   playSound('win');
-  showTimeAttackClearScreen();
+  const level = state.timeAttackLevel;
+  const prevBest = state.timeAttackBest[level];
+  const isNewBest = (prevBest == null) || (ta.finalTimeMs < prevBest);
+  if (isNewBest){
+    state.timeAttackBest[level] = ta.finalTimeMs;
+    saveTimeAttackBest();
+  }
+  showTimeAttackClearScreen(isNewBest);
 }
 function gameOverTimeAttack(){
   const ta = state.timeAttack;
@@ -1732,10 +1759,13 @@ function gameOverTimeAttack(){
   showTimeAttackGameOverScreen();
 }
 
-function showTimeAttackClearScreen(){
+function showTimeAttackClearScreen(isNewBest){
   const ta = state.timeAttack;
   document.getElementById('ta-pause-btn').classList.add('hidden');
-  document.getElementById('ta-clear-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+  const timeEl = document.getElementById('ta-clear-time');
+  timeEl.textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+  timeEl.classList.toggle('ta-new-best', !!isNewBest);
+  document.getElementById('ta-clear-best').textContent = 'BEST ' + formatTime(state.timeAttackBest[state.timeAttackLevel]);
   const penalty = ta.mistakeCount*10;
   document.getElementById('ta-clear-detail').textContent = ta.mistakeCount > 0
     ? `お手つき ${ta.mistakeCount}回（+${penalty}秒）`
@@ -1753,7 +1783,9 @@ function showTimeAttackGameOverScreen(){
 function showTimeAttackFeedback(type, text){
   const el = document.getElementById('ta-feedback');
   el.textContent = text;
-  el.className = 'ta-feedback show ' + type;
+  el.className = 'ta-feedback ' + type;
+  void el.offsetWidth;
+  el.classList.add('show');
 }
 function hideTimeAttackFeedback(){
   const el = document.getElementById('ta-feedback');
@@ -1809,18 +1841,11 @@ function renderTimeAttack(){
 function openTimeAttackPauseMenu(){
   const ta = state.timeAttack;
   if (ta.status !== 'playing' || ta.inputLocked) return;
-  ta.pausedAt = performance.now();
-  clearTimeAttackTimerLoop();
+  // Timer keeps running behind the overlay (anti-cheat: pausing must not buy free thinking time).
   document.getElementById('ta-pause-overlay').classList.remove('hidden');
 }
 function resumeTimeAttackFromPause(){
-  const ta = state.timeAttack;
   document.getElementById('ta-pause-overlay').classList.add('hidden');
-  if (ta.pausedAt != null){
-    ta.totalPausedDuration += performance.now() - ta.pausedAt;
-    ta.pausedAt = null;
-  }
-  startTimeAttackTimerLoop();
 }
 function confirmTimeAttackPauseToTitle(){
   clearTimeAttackTimerLoop();
@@ -2251,6 +2276,7 @@ document.addEventListener('touchend', (e)=>{
 document.addEventListener('DOMContentLoaded', ()=>{
   initTitleBackground();
   loadSettings();
+  state.timeAttackBest = loadTimeAttackBest();
   renderLevelToggleButtons();
   updateLevelWarning();
   updateCpuFieldsetVisibility();
