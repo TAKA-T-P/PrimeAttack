@@ -562,10 +562,10 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   <fieldset>
     <legend>出題レベル（複数選択可）</legend>
     <div class="btn-row">
-      <button type="button" class="option-btn level-toggle-btn selected" data-value="1">1</button>
-      <button type="button" class="option-btn level-toggle-btn selected" data-value="2">2</button>
-      <button type="button" class="option-btn level-toggle-btn" data-value="3">3</button>
-      <button type="button" class="option-btn level-toggle-btn" data-value="4">4</button>
+      <button type="button" class="option-btn level-toggle-btn selected" data-value="1">初級</button>
+      <button type="button" class="option-btn level-toggle-btn selected" data-value="2">中級</button>
+      <button type="button" class="option-btn level-toggle-btn" data-value="3">上級</button>
+      <button type="button" class="option-btn level-toggle-btn" data-value="4">プロ級</button>
     </div>
   </fieldset>
 
@@ -735,6 +735,8 @@ const LEVEL_DECKS = {
   3: { cards:[735,484,605,441,1100,726,308,770,440,132,462,630,154,231,315,495,420,198,330,385] },
   4: { cards:[1980,2310,8470,5250,2520,1320,1782,10500,2646,5544,3234,1960,2156,2450,1089,2475,1540,1210,4950,3388] }
 };
+
+const LEVEL_LABELS = {1:'初級', 2:'中級', 3:'上級', 4:'プロ級'};
 
 const CPU_LEVELS = {
   1:{minMs:3200,maxMs:5200,mistakeRate:0.22},
@@ -1430,7 +1432,7 @@ function renderComposite(){
   const lv = compositeLevelOf(state.currentComposite);
   el.textContent = state.currentComposite;
   el.className = 'composite-card level-' + lv;
-  label.textContent = 'レベル' + lv;
+  label.textContent = LEVEL_LABELS[lv] || ('レベル' + lv);
 }
 
 function renderUsed(){
