@@ -259,6 +259,15 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   transition:opacity 1.2s ease;
 }
 .lowstock-warning.fade-out{opacity:0;}
+.lowstock-bg{
+  position:absolute;left:0;right:0;height:33.34%;
+  background:rgba(255,235,59,0);
+  transition:background 0.5s ease;
+  pointer-events:none;
+}
+.lowstock-bg-top{top:0;}
+.lowstock-bg-bottom{bottom:0;}
+.lowstock-bg.active{background:rgba(255,235,59,0.14);}
 .mistake-flash{
   position:absolute;inset:0;z-index:55;
   display:flex;align-items:center;justify-content:center;
@@ -634,12 +643,14 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 </div>
 
 <div id="game-screen" class="screen hidden">
+  <div id="p2-lowstock-bg" class="lowstock-bg lowstock-bg-top"></div>
+  <div id="p1-lowstock-bg" class="lowstock-bg lowstock-bg-bottom"></div>
   <div id="anim-layer"></div>
   <button id="pause-btn" class="pause-btn hidden">ポーズ</button>
   <div id="board">
     <div id="top-zone" class="player-zone">
       <div id="p2-mistake-flash" class="mistake-flash hidden">お手つき！</div>
-      <div id="p2-lowstock" class="lowstock-warning hidden">残り3枚！</div>
+      <div id="p2-lowstock" class="lowstock-warning hidden">ラストスパート！</div>
       <div id="p2-hand" class="hand-row"></div>
       <div class="remaining-row">
         <div id="p2-remaining" class="remaining-label"></div>
@@ -663,7 +674,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 
     <div id="bottom-zone" class="player-zone">
       <div id="p1-mistake-flash" class="mistake-flash hidden">お手つき！</div>
-      <div id="p1-lowstock" class="lowstock-warning hidden">残り3枚！</div>
+      <div id="p1-lowstock" class="lowstock-warning hidden">ラストスパート！</div>
       <div id="p1-hand" class="hand-row"></div>
       <div class="remaining-row">
         <div id="p1-remaining" class="remaining-label"></div>
@@ -1391,6 +1402,8 @@ function renderRemaining(){
     const player = state.players[pid];
     const count = Math.max(0, player.deck.length - 1);
     document.getElementById(pid + '-remaining').innerHTML = '山札 残り<span class="remaining-count">' + count + '</span>枚';
+    const bgEl = document.getElementById(pid + '-lowstock-bg');
+    if (bgEl) bgEl.classList.toggle('active', state.phase !== 'GAME_OVER' && count <= 3);
   });
 }
 
