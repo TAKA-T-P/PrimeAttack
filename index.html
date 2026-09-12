@@ -1675,8 +1675,9 @@ function showResultScreen(winnerId){
   document.getElementById('result-content').classList.toggle('rot90', state.mode === 'local2p');
 
   const opponentLabel = state.mode === 'single' ? 'CPU' : '2P';
-  document.getElementById('result-play-counts-values').textContent =
-    `1P：${state.playerSuccessfulPlays}枚　${opponentLabel}：${state.cpuSuccessfulPlays}枚`;
+  document.getElementById('result-play-counts-values').textContent = (state.mode === 'local2p')
+    ? `←2P：${state.cpuSuccessfulPlays}枚　1P：${state.playerSuccessfulPlays}枚→`
+    : `1P：${state.playerSuccessfulPlays}枚　${opponentLabel}：${state.cpuSuccessfulPlays}枚`;
 
   if (state.mode === 'single'){
     text.textContent = winnerId === 'p1' ? '勝ち！' : '負け…';
