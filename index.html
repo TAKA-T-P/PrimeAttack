@@ -594,6 +594,20 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   width:clamp(90px,28vw,150px);
   font-size:clamp(26px,9vw,48px);
 }
+.ta-composite-row{
+  display:flex;align-items:center;gap:clamp(8px,3vw,16px);
+}
+.ta-hint-btn{
+  padding:7px 12px;border-radius:20px;border:1px solid #ffb300;
+  background:rgba(255,179,0,0.15);color:#ffb300;font-size:13px;font-weight:700;
+  white-space:nowrap;
+}
+.ta-hint-btn:disabled{opacity:0.35;border-color:#555;color:#888;background:transparent;}
+.ta-hint-remaining{
+  min-height:1.3em;
+  font-size:clamp(16px,4.5vw,20px);font-weight:800;color:#ffb300;
+  text-align:center;
+}
 .ta-entered{
   min-height:1.4em;
   font-size:clamp(28px,8vw,36px);font-weight:800;color:var(--sub);
@@ -611,6 +625,14 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .ta-feedback.correct{color:#66bb6a;font-size:clamp(44px,15vw,72px);}
 .ta-feedback.correct.show{animation:pop 0.3s ease;}
 .ta-feedback.mistake{color:var(--danger);}
+.ta-hint-toast{
+  position:absolute;left:0;right:0;top:calc(50% - 50px);
+  text-align:center;font-weight:800;color:#ffb300;
+  font-size:clamp(16px,5vw,22px);
+  text-shadow:0 2px 8px rgba(0,0,0,0.6);
+  opacity:0;pointer-events:none;transition:opacity 0.4s ease;
+}
+.ta-hint-toast.show{opacity:1;}
 .ta-hand-row{
   flex:0 0 auto;
   display:flex;justify-content:center;gap:clamp(4px,2vw,10px);
@@ -840,8 +862,13 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     </div>
     <div class="ta-timer" id="ta-timer">TIME 00:00.00</div>
     <div class="ta-center">
-      <div id="ta-composite-card" class="composite-card"></div>
+      <div class="ta-composite-row">
+        <div id="ta-composite-card" class="composite-card"></div>
+        <button type="button" id="ta-hint-btn" class="ta-hint-btn" disabled>ヒント</button>
+      </div>
+      <div id="ta-hint-remaining" class="ta-hint-remaining"></div>
       <div id="ta-entered" class="ta-entered"></div>
+      <div id="ta-hint-toast" class="ta-hint-toast"></div>
       <div id="ta-feedback" class="ta-feedback"></div>
     </div>
     <div id="ta-hand" class="ta-hand-row hand-row"></div>
@@ -1065,7 +1092,10 @@ let state = {
     finalTimeMs:null,
     inputLocked:false,
     timerIntervalId:null,
-    feedbackTimeoutId:null
+    feedbackTimeoutId:null,
+    hintCount:0,
+    hintShown:false,
+    hintToastTimeoutId:null
   }
 };
 
@@ -1599,7 +1629,16 @@ function getTimeAttackElapsedMs(){
   if (ta.startTime == null) return 0;
   // Pausing intentionally does NOT stop this clock (anti-cheat: no free thinking time).
   const raw = performance.now() - ta.startTime;
-  return raw + ta.mistakeCount*10000;
+  return raw + ta.mistakeCount*10000 + ta.hintCount*10000;
+}
+
+function timeAttackHintRemainingValue(){
+  const ta = state.timeAttack;
+  let val = 1;
+  Object.keys(ta.remainingFactors).forEach(p=>{
+    val *= Math.pow(parseInt(p,10), ta.remainingFactors[p]);
+  });
+  return val;
 }
 
 function clearTimeAttackTimerLoop(){
@@ -1612,10 +1651,14 @@ function startTimeAttackTimerLoop(){
 function clearTimeAttackFeedbackTimer(){
   if (state.timeAttack.feedbackTimeoutId){ clearTimeout(state.timeAttack.feedbackTimeoutId); state.timeAttack.feedbackTimeoutId = null; }
 }
+function clearTimeAttackHintToastTimer(){
+  if (state.timeAttack.hintToastTimeoutId){ clearTimeout(state.timeAttack.hintToastTimeoutId); state.timeAttack.hintToastTimeoutId = null; }
+}
 
 function resetTimeAttackRun(){
   clearTimeAttackTimerLoop();
   clearTimeAttackFeedbackTimer();
+  clearTimeAttackHintToastTimer();
   state.timeAttack = {
     status:'idle',
     questions:[],
@@ -1629,7 +1672,10 @@ function resetTimeAttackRun(){
     finalTimeMs:null,
     inputLocked:false,
     timerIntervalId:null,
-    feedbackTimeoutId:null
+    feedbackTimeoutId:null,
+    hintCount:0,
+    hintShown:false,
+    hintToastTimeoutId:null
   };
 }
 
@@ -1665,6 +1711,7 @@ function showNextTimeAttackQuestion(){
   ta.remainingFactors = factorize(num);
   ta.enteredFactors = [];
   ta.inputLocked = false;
+  ta.hintShown = false;
   hideTimeAttackFeedback();
   renderTimeAttack();
 }
@@ -1675,7 +1722,12 @@ function handleTimeAttackPrime(prime){
   if ((ta.remainingFactors[prime]||0) > 0){
     ta.remainingFactors[prime]--;
     ta.enteredFactors.push(prime);
+    if (ta.hintShown){
+      ta.hintShown = false;
+      document.getElementById('ta-hint-remaining').textContent = '';
+    }
     document.getElementById('ta-entered').textContent = ta.enteredFactors.join(' × ');
+    updateTimeAttackHintButton();
     const done = Object.values(ta.remainingFactors).every(v=>v===0);
     if (done){
       ta.inputLocked = true;
@@ -1713,6 +1765,7 @@ function handleTimeAttackMistake(prime){
   showTimeAttackMistakeShake(prime);
   showTimeAttackFeedback('mistake', 'お手つき！ +10秒');
   ta.inputLocked = true;
+  updateTimeAttackHintButton();
   document.getElementById('ta-mistake-count').textContent = `お手つき ${ta.mistakeCount} / 3`;
 
   if (ta.mistakeCount >= 3){
@@ -1726,7 +1779,40 @@ function handleTimeAttackMistake(prime){
   ta.feedbackTimeoutId = setTimeout(()=>{
     ta.inputLocked = false;
     hideTimeAttackFeedback();
+    updateTimeAttackHintButton();
   }, 500);
+}
+
+function updateTimeAttackHintButton(){
+  const ta = state.timeAttack;
+  const btn = document.getElementById('ta-hint-btn');
+  const enabled = ta.status === 'playing' && !ta.inputLocked && ta.enteredFactors.length > 0 && ta.hintCount < 3;
+  btn.disabled = !enabled;
+}
+
+function showTimeAttackHintToast(){
+  const el = document.getElementById('ta-hint-toast');
+  el.textContent = 'ヒント使用 +10秒';
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeAttackHintToastTimer();
+  state.timeAttack.hintToastTimeoutId = setTimeout(()=>{
+    el.classList.remove('show');
+  }, 900);
+}
+
+function useTimeAttackHint(){
+  const ta = state.timeAttack;
+  if (ta.status !== 'playing' || ta.inputLocked) return;
+  if (ta.enteredFactors.length === 0) return;
+  if (ta.hintCount >= 3) return;
+  ta.hintCount++;
+  ta.hintShown = true;
+  document.getElementById('ta-hint-remaining').textContent = '残り' + timeAttackHintRemainingValue();
+  renderTimeAttackTimer();
+  showTimeAttackHintToast();
+  updateTimeAttackHintButton();
 }
 
 function loadTimeAttackBest(){
@@ -1833,7 +1919,9 @@ function renderTimeAttack(){
   }
 
   document.getElementById('ta-entered').textContent = ta.enteredFactors.join(' × ');
+  document.getElementById('ta-hint-remaining').textContent = ta.hintShown ? ('残り' + timeAttackHintRemainingValue()) : '';
   document.getElementById('ta-pause-btn').classList.toggle('hidden', ta.status !== 'playing');
+  updateTimeAttackHintButton();
 
   renderTimeAttackHand();
 }
@@ -2389,6 +2477,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('ta-pause-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     openTimeAttackPauseMenu();
+  });
+  document.getElementById('ta-hint-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    useTimeAttackHint();
   });
   document.getElementById('ta-pause-yes').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
