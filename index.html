@@ -876,6 +876,7 @@ let state = {
   compositeDeck:[],
   compositeDiscard:[],
   currentComposite:null,
+  compositeHidden:false,
   remainingFactors:{},
   roundUsed:{p1:[],p2:[]},
   lastPlayed:{},
@@ -1114,10 +1115,16 @@ function proceedToNextRound(){
   state.lastPlayed = {};
   state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
   nextComposite();
+  state.compositeHidden = true;
   state.phase = 'PLAYING';
   state.inputLocked = false;
   render();
-  if (state.mode === 'single') scheduleCPU();
+  setTimeout(()=>{
+    if (state.phase !== 'PLAYING') return;
+    state.compositeHidden = false;
+    render();
+    if (state.mode === 'single') scheduleCPU();
+  }, 1000);
 }
 
 function refillHandSlot(playerId, index){
@@ -1180,7 +1187,7 @@ function clearTenCountTimer(){
   if (state.tenCount.intervalId){ clearInterval(state.tenCount.intervalId); state.tenCount.intervalId = null; }
 }
 function declareTenCount(playerId){
-  if (state.phase !== 'PLAYING' || state.inputLocked || state.tenCount.active) return;
+  if (state.phase !== 'PLAYING' || state.inputLocked || state.compositeHidden || state.tenCount.active) return;
   const player = state.players[playerId];
   player.locked = true;
   player.lockReason = 'declared';
@@ -1302,7 +1309,7 @@ function showMistakeFlash(playerId){
 }
 
 function playCard(playerId, index){
-  if (state.phase !== 'PLAYING' || state.inputLocked) return;
+  if (state.phase !== 'PLAYING' || state.inputLocked || state.compositeHidden) return;
   if (Date.now() < state.actionLockUntil[playerId]) return;
   const player = state.players[playerId];
   if (player.locked) return;
@@ -1358,14 +1365,14 @@ function clearCPUTimer(){
 }
 function scheduleCPU(){
   clearCPUTimer();
-  if (state.phase !== 'PLAYING' || state.players.p2.locked) return;
+  if (state.phase !== 'PLAYING' || state.players.p2.locked || state.compositeHidden) return;
   const cfg = CPU_LEVELS[state.cpuLevel];
   const delay = cfg.minMs + Math.random()*(cfg.maxMs - cfg.minMs);
   state.cpuTimerId = setTimeout(cpuAct, delay);
 }
 function cpuAct(){
   state.cpuTimerId = null;
-  if (state.phase !== 'PLAYING' || state.inputLocked) return;
+  if (state.phase !== 'PLAYING' || state.inputLocked || state.compositeHidden) return;
   const player = state.players.p2;
   if (player.locked) return;
   const hand = player.hand;
@@ -1432,7 +1439,7 @@ function renderHandRow(playerId, containerId){
     }
     btn.className = 'card ' + (playerId === 'p1' ? 'p1-card' : 'p2-card') + (isCpu ? ' cpu-card' : '');
     btn.textContent = val;
-    const disabled = state.phase !== 'PLAYING' || state.inputLocked || player.locked || isCpu;
+    const disabled = state.phase !== 'PLAYING' || state.inputLocked || state.compositeHidden || player.locked || isCpu;
     if (disabled) btn.classList.add('disabled');
     if (!isCpu){
       btn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); playCard(playerId, idx); });
@@ -1446,6 +1453,12 @@ function renderComposite(){
   const label = document.getElementById('composite-label');
   if (state.currentComposite == null){
     el.textContent = '';
+    el.className = 'composite-card';
+    label.textContent = '';
+    return;
+  }
+  if (state.compositeHidden){
+    el.textContent = '?';
     el.className = 'composite-card';
     label.textContent = '';
     return;
@@ -1483,7 +1496,7 @@ function renderStatus(){
   document.getElementById('p1-message').textContent = statusMessage('p1');
   document.getElementById('p2-message').textContent = state.mode === 'single' ? '' : statusMessage('p2');
 
-  const declareEnabled = state.phase === 'PLAYING' && !state.inputLocked && !state.tenCount.active;
+  const declareEnabled = state.phase === 'PLAYING' && !state.inputLocked && !state.compositeHidden && !state.tenCount.active;
   const p1Btn = document.getElementById('p1-declare');
   p1Btn.disabled = !declareEnabled;
 
@@ -1621,6 +1634,7 @@ function startGame(){
   state.lastPlayed = {};
   state.winner = null;
   state.currentComposite = null;
+  state.compositeHidden = false;
   state.remainingFactors = {};
   state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
   state.playerSuccessfulPlays = 0;
