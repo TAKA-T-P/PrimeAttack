@@ -537,6 +537,74 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .pause-btn.rot90{transform:translateY(-50%) rotate(90deg);}
 #pause-overlay{z-index:600;background:rgba(0,0,0,0.75);}
 #pause-text{font-size:clamp(18px,5vw,24px);font-weight:700;color:#fff;text-align:center;padding:0 24px;}
+
+/* ---------- Time Attack screen ---------- */
+#timeattack-screen{
+  flex-direction:column;
+  height:100dvh;width:100vw;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  overflow:hidden;
+  position:relative;
+  touch-action:manipulation;
+  user-select:none;
+}
+#ta-pause-btn{
+  position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px;left:auto;
+  transform:none;z-index:350;
+}
+#ta-board{
+  flex:1;display:flex;flex-direction:column;
+  max-width:600px;width:100%;margin:0 auto;
+  min-height:0;
+  padding:calc(env(safe-area-inset-top) + 54px) 14px 14px;
+  gap:clamp(6px,2vh,14px);
+}
+.ta-top-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:clamp(12px,3.6vw,15px);color:var(--sub);
+  flex:0 0 auto;
+}
+.ta-timer{
+  flex:0 0 auto;
+  text-align:center;
+  font-size:clamp(26px,9vw,44px);font-weight:800;color:#fff;
+  letter-spacing:1px;
+  font-variant-numeric:tabular-nums;
+}
+.ta-center{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  min-height:0;position:relative;
+}
+#ta-composite-card{
+  width:clamp(90px,28vw,150px);
+  font-size:clamp(26px,9vw,48px);
+}
+.ta-entered{
+  min-height:1.4em;
+  font-size:clamp(14px,4vw,18px);color:var(--sub);
+  text-align:center;
+}
+.ta-feedback{
+  position:absolute;left:0;right:0;top:calc(50% - 14px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(22px,7.5vw,36px);font-weight:800;
+  pointer-events:none;
+  opacity:0;transition:opacity 0.2s ease;
+  text-shadow:0 2px 8px rgba(0,0,0,0.6);
+}
+.ta-feedback.show{opacity:1;}
+.ta-feedback.correct{color:#66bb6a;}
+.ta-feedback.mistake{color:var(--danger);}
+.ta-hand-row{
+  flex:0 0 auto;
+  display:flex;justify-content:center;gap:clamp(4px,2vw,10px);
+  min-height:44px;flex-wrap:nowrap;
+}
+.ta-hand-row .card{flex:1;max-width:64px;min-width:40px;}
+.ta-result-time{font-size:clamp(22px,7vw,38px);font-weight:800;color:#fff;}
+.ta-result-detail{font-size:clamp(12px,3.4vw,14px);color:var(--sub);}
+#ta-clear-overlay,#ta-gameover-overlay{background:rgba(0,0,0,0.85);}
 </style>
 </head>
 <body>
@@ -551,6 +619,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   <fieldset>
     <legend>モード選択</legend>
     <div class="btn-row">
+      <button type="button" class="option-btn mode-btn" data-mode="timeAttack">タイムアタック</button>
       <button type="button" class="option-btn mode-btn selected" data-mode="single">CPU対戦</button>
       <button type="button" class="option-btn mode-btn" data-mode="local2p">2人対戦</button>
     </div>
@@ -569,7 +638,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   </fieldset>
 
   <fieldset>
-    <legend>出題レベル（複数選択可）</legend>
+    <legend id="level-fieldset-legend">出題レベル（複数選択可）</legend>
     <div class="btn-row">
       <button type="button" class="option-btn level-toggle-btn selected" data-value="1">初級</button>
       <button type="button" class="option-btn level-toggle-btn selected" data-value="2">中級</button>
@@ -634,6 +703,10 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 
     <div class="help-block">
       <div class="help-block-title">モードについて</div>
+      <p><strong>タイムアタック</strong>：画面の「2・3・5・7・11」を使って合成数を素因数分解し、10問正解までのタイムに挑戦します。カードは何度使ってもなくなりません。お手つき1回につき10秒加算され、3回でゲームオーバーです。出題レベルは1つだけ選びます。</p>
+      <div class="help-example">
+        <div class="help-example-arrow">28なら「2」「2」「7」をタップ<br>順番は自由！</div>
+      </div>
       <p><strong>CPU対戦</strong>：コンピュータと対戦します。CPUの強さは 1・2・3・4・5・MAX から選べます。</p>
       <p><strong>2人対戦</strong>：1台のスマホやタブレットを2人ではさんで対戦します。上側が2P、下側が1Pです。</p>
     </div>
@@ -730,6 +803,59 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     <div style="display:flex;gap:14px;">
       <button id="pause-yes" class="result-btn">はい</button>
       <button id="pause-no" class="result-btn">いいえ</button>
+    </div>
+  </div>
+</div>
+
+<div id="timeattack-screen" class="screen hidden">
+  <button id="ta-pause-btn" class="pause-btn hidden">ポーズ</button>
+  <div id="ta-board">
+    <div class="ta-top-row">
+      <div id="ta-question-count">問題 1 / 10</div>
+      <div id="ta-mistake-count">お手つき 0 / 3</div>
+    </div>
+    <div class="ta-timer" id="ta-timer">TIME 00:00.00</div>
+    <div class="ta-center">
+      <div id="ta-composite-card" class="composite-card"></div>
+      <div id="ta-entered" class="ta-entered"></div>
+      <div id="ta-feedback" class="ta-feedback"></div>
+    </div>
+    <div id="ta-hand" class="ta-hand-row hand-row"></div>
+  </div>
+
+  <div id="ta-countdown-overlay" class="overlay hidden"><div id="ta-countdown-content"><div id="ta-countdown-text"></div></div></div>
+
+  <div id="ta-pause-overlay" class="overlay hidden">
+    <div id="ta-pause-text">タイトル画面へ戻りますか？</div>
+    <div style="display:flex;gap:14px;">
+      <button id="ta-pause-yes" class="result-btn">はい</button>
+      <button id="ta-pause-no" class="result-btn">いいえ</button>
+    </div>
+  </div>
+
+  <div id="ta-clear-overlay" class="overlay hidden">
+    <div class="result-content">
+      <div id="ta-clear-text" style="font-size:clamp(40px,13vw,72px);font-weight:800;color:#fff;">CLEAR!</div>
+      <div>10問正解！</div>
+      <div id="ta-clear-time" class="ta-result-time"></div>
+      <div id="ta-clear-detail" class="ta-result-detail"></div>
+      <div class="result-btn-row">
+        <button id="ta-clear-retry-btn" class="result-btn">もう一度</button>
+        <button id="ta-clear-title-btn" class="result-btn">タイトルへ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ta-gameover-overlay" class="overlay hidden">
+    <div class="result-content">
+      <div style="font-size:clamp(32px,11vw,56px);font-weight:800;color:var(--danger);">GAME OVER</div>
+      <div>お手つきが3回になりました</div>
+      <div id="ta-gameover-score" class="ta-result-detail"></div>
+      <div id="ta-gameover-time" class="ta-result-time"></div>
+      <div class="result-btn-row">
+        <button id="ta-gameover-retry-btn" class="result-btn">もう一度</button>
+        <button id="ta-gameover-title-btn" class="result-btn">タイトルへ</button>
+      </div>
     </div>
   </div>
 </div>
@@ -868,6 +994,7 @@ let state = {
   mode:'single',
   cpuLevel:3,
   selectedLevels:[1,2],
+  timeAttackLevel:1,
   soundOn:true,
 
   phase:'TITLE',
@@ -896,7 +1023,25 @@ let state = {
   playerSuccessfulPlays:0,
   cpuSuccessfulPlays:0,
 
-  maxUnlocked:false
+  maxUnlocked:false,
+
+  timeAttack:{
+    status:'idle', // idle | countdown | playing | clear | gameOver
+    questions:[],
+    questionIndex:0,
+    correctCount:0,
+    mistakeCount:0,
+    currentNumber:null,
+    remainingFactors:{},
+    enteredFactors:[],
+    startTime:null,
+    pausedAt:null,
+    totalPausedDuration:0,
+    finalTimeMs:null,
+    inputLocked:false,
+    timerIntervalId:null,
+    feedbackTimeoutId:null
+  }
 };
 
 /* ================= UTIL ================= */
@@ -1406,6 +1551,277 @@ function cpuAct(){
   }
 }
 
+/* ================= TIME ATTACK ================= */
+function formatTime(ms){
+  ms = Math.max(0, Math.round(ms));
+  const totalCentis = Math.floor(ms/10);
+  const centis = totalCentis % 100;
+  const totalSeconds = Math.floor(totalCentis/100);
+  const seconds = totalSeconds % 60;
+  const minutes = Math.floor(totalSeconds/60);
+  const pad = n => String(n).padStart(2,'0');
+  return pad(minutes)+':'+pad(seconds)+'.'+pad(centis);
+}
+
+function prepareTimeAttackQuestions(level){
+  const unique = Array.from(new Set(LEVEL_DECKS[level].cards));
+  return shuffle(unique).slice(0,10);
+}
+
+function getTimeAttackElapsedMs(){
+  const ta = state.timeAttack;
+  if (ta.startTime == null) return 0;
+  let paused = ta.totalPausedDuration;
+  if (ta.pausedAt != null) paused += performance.now() - ta.pausedAt;
+  const raw = performance.now() - ta.startTime - paused;
+  return raw + ta.mistakeCount*10000;
+}
+
+function clearTimeAttackTimerLoop(){
+  if (state.timeAttack.timerIntervalId){ clearInterval(state.timeAttack.timerIntervalId); state.timeAttack.timerIntervalId = null; }
+}
+function startTimeAttackTimerLoop(){
+  clearTimeAttackTimerLoop();
+  state.timeAttack.timerIntervalId = setInterval(renderTimeAttackTimer, 50);
+}
+function clearTimeAttackFeedbackTimer(){
+  if (state.timeAttack.feedbackTimeoutId){ clearTimeout(state.timeAttack.feedbackTimeoutId); state.timeAttack.feedbackTimeoutId = null; }
+}
+
+function resetTimeAttackRun(){
+  clearTimeAttackTimerLoop();
+  clearTimeAttackFeedbackTimer();
+  state.timeAttack = {
+    status:'idle',
+    questions:[],
+    questionIndex:0,
+    correctCount:0,
+    mistakeCount:0,
+    currentNumber:null,
+    remainingFactors:{},
+    enteredFactors:[],
+    startTime:null,
+    pausedAt:null,
+    totalPausedDuration:0,
+    finalTimeMs:null,
+    inputLocked:false,
+    timerIntervalId:null,
+    feedbackTimeoutId:null
+  };
+}
+
+function startTimeAttack(){
+  syncSettingsFromUI();
+  saveSettings();
+  resetTimeAttackRun();
+  const ta = state.timeAttack;
+  ta.questions = prepareTimeAttackQuestions(state.timeAttackLevel);
+  ta.status = 'countdown';
+
+  document.getElementById('ta-clear-overlay').classList.add('hidden');
+  document.getElementById('ta-gameover-overlay').classList.add('hidden');
+  document.getElementById('ta-pause-overlay').classList.add('hidden');
+  document.getElementById('ta-countdown-overlay').classList.add('hidden');
+
+  showScreen('timeattack');
+  renderTimeAttack();
+
+  runStartCountdown(()=>{
+    ta.status = 'playing';
+    ta.startTime = performance.now();
+    ta.totalPausedDuration = 0;
+    ta.pausedAt = null;
+    showNextTimeAttackQuestion();
+    startTimeAttackTimerLoop();
+  }, 'ta-countdown-overlay', 'ta-countdown-content', 'ta-countdown-text', false);
+}
+
+function showNextTimeAttackQuestion(){
+  const ta = state.timeAttack;
+  const num = ta.questions[ta.questionIndex];
+  ta.currentNumber = num;
+  ta.remainingFactors = factorize(num);
+  ta.enteredFactors = [];
+  ta.inputLocked = false;
+  hideTimeAttackFeedback();
+  renderTimeAttack();
+}
+
+function handleTimeAttackPrime(prime){
+  const ta = state.timeAttack;
+  if (ta.status !== 'playing' || ta.inputLocked) return;
+  if ((ta.remainingFactors[prime]||0) > 0){
+    ta.remainingFactors[prime]--;
+    ta.enteredFactors.push(prime);
+    document.getElementById('ta-entered').textContent = ta.enteredFactors.join(' × ');
+    const done = Object.values(ta.remainingFactors).every(v=>v===0);
+    if (done){
+      ta.inputLocked = true;
+      handleTimeAttackCorrect();
+    }
+    return;
+  }
+  handleTimeAttackMistake(prime);
+}
+
+function handleTimeAttackCorrect(){
+  const ta = state.timeAttack;
+  ta.correctCount++;
+  playSound('correct');
+  showTimeAttackFeedback('correct', '正解！');
+  if (ta.correctCount >= 10){
+    ta.finalTimeMs = getTimeAttackElapsedMs();
+    clearTimeAttackTimerLoop();
+    document.getElementById('ta-timer').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+    ta.feedbackTimeoutId = setTimeout(()=> finishTimeAttack(), 500);
+    return;
+  }
+  ta.feedbackTimeoutId = setTimeout(()=>{
+    ta.questionIndex++;
+    showNextTimeAttackQuestion();
+  }, 500);
+}
+
+function handleTimeAttackMistake(prime){
+  const ta = state.timeAttack;
+  ta.mistakeCount++;
+  playSound('incorrect');
+  showTimeAttackMistakeShake(prime);
+  showTimeAttackFeedback('mistake', 'お手つき！ +10秒');
+  ta.inputLocked = true;
+  document.getElementById('ta-mistake-count').textContent = `お手つき ${ta.mistakeCount} / 3`;
+
+  if (ta.mistakeCount >= 3){
+    ta.finalTimeMs = getTimeAttackElapsedMs();
+    clearTimeAttackTimerLoop();
+    document.getElementById('ta-timer').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+    ta.feedbackTimeoutId = setTimeout(()=> gameOverTimeAttack(), 500);
+    return;
+  }
+  renderTimeAttackTimer();
+  ta.feedbackTimeoutId = setTimeout(()=>{
+    ta.inputLocked = false;
+    hideTimeAttackFeedback();
+  }, 500);
+}
+
+function finishTimeAttack(){
+  const ta = state.timeAttack;
+  ta.status = 'clear';
+  playSound('win');
+  showTimeAttackClearScreen();
+}
+function gameOverTimeAttack(){
+  const ta = state.timeAttack;
+  ta.status = 'gameOver';
+  playSound('lose');
+  showTimeAttackGameOverScreen();
+}
+
+function showTimeAttackClearScreen(){
+  const ta = state.timeAttack;
+  document.getElementById('ta-pause-btn').classList.add('hidden');
+  document.getElementById('ta-clear-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+  const penalty = ta.mistakeCount*10;
+  document.getElementById('ta-clear-detail').textContent = ta.mistakeCount > 0
+    ? `お手つき ${ta.mistakeCount}回（+${penalty}秒）`
+    : 'お手つきなし！';
+  document.getElementById('ta-clear-overlay').classList.remove('hidden');
+}
+function showTimeAttackGameOverScreen(){
+  const ta = state.timeAttack;
+  document.getElementById('ta-pause-btn').classList.add('hidden');
+  document.getElementById('ta-gameover-score').textContent = `正解 ${ta.correctCount} / 10`;
+  document.getElementById('ta-gameover-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+  document.getElementById('ta-gameover-overlay').classList.remove('hidden');
+}
+
+function showTimeAttackFeedback(type, text){
+  const el = document.getElementById('ta-feedback');
+  el.textContent = text;
+  el.className = 'ta-feedback show ' + type;
+}
+function hideTimeAttackFeedback(){
+  const el = document.getElementById('ta-feedback');
+  el.className = 'ta-feedback';
+  el.textContent = '';
+}
+function showTimeAttackMistakeShake(prime){
+  const btn = document.querySelector(`#ta-hand .card[data-prime="${prime}"]`);
+  if (!btn) return;
+  btn.classList.add('shake');
+  setTimeout(()=> btn.classList.remove('shake'), 350);
+}
+
+function renderTimeAttackTimer(){
+  document.getElementById('ta-timer').textContent = 'TIME ' + formatTime(getTimeAttackElapsedMs());
+}
+
+function renderTimeAttackHand(){
+  const container = document.getElementById('ta-hand');
+  if (container.childElementCount === PRIMES.length) return;
+  container.innerHTML = '';
+  PRIMES.forEach(p=>{
+    const btn = document.createElement('button');
+    btn.className = 'card p1-card';
+    btn.textContent = p;
+    btn.dataset.prime = p;
+    btn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); handleTimeAttackPrime(p); });
+    container.appendChild(btn);
+  });
+}
+
+function renderTimeAttack(){
+  const ta = state.timeAttack;
+  document.getElementById('ta-question-count').textContent = `問題 ${Math.min(ta.questionIndex+1,10)} / 10`;
+  document.getElementById('ta-mistake-count').textContent = `お手つき ${ta.mistakeCount} / 3`;
+  renderTimeAttackTimer();
+
+  const compEl = document.getElementById('ta-composite-card');
+  if (ta.currentNumber == null){
+    compEl.textContent = '';
+    compEl.className = 'composite-card';
+  } else {
+    compEl.textContent = ta.currentNumber;
+    compEl.className = 'composite-card level-' + state.timeAttackLevel;
+  }
+
+  document.getElementById('ta-entered').textContent = ta.enteredFactors.join(' × ');
+  document.getElementById('ta-pause-btn').classList.toggle('hidden', ta.status !== 'playing');
+
+  renderTimeAttackHand();
+}
+
+function openTimeAttackPauseMenu(){
+  const ta = state.timeAttack;
+  if (ta.status !== 'playing' || ta.inputLocked) return;
+  ta.pausedAt = performance.now();
+  clearTimeAttackTimerLoop();
+  document.getElementById('ta-pause-overlay').classList.remove('hidden');
+}
+function resumeTimeAttackFromPause(){
+  const ta = state.timeAttack;
+  document.getElementById('ta-pause-overlay').classList.add('hidden');
+  if (ta.pausedAt != null){
+    ta.totalPausedDuration += performance.now() - ta.pausedAt;
+    ta.pausedAt = null;
+  }
+  startTimeAttackTimerLoop();
+}
+function confirmTimeAttackPauseToTitle(){
+  clearTimeAttackTimerLoop();
+  clearTimeAttackFeedbackTimer();
+  document.getElementById('ta-pause-overlay').classList.add('hidden');
+  resetTimeAttackRun();
+  goToTitle();
+}
+function retryTimeAttack(){
+  document.getElementById('ta-clear-overlay').classList.add('hidden');
+  document.getElementById('ta-gameover-overlay').classList.add('hidden');
+  ensureAudio();
+  startTimeAttack();
+}
+
 /* ================= RENDER ================= */
 function compositeLevelOf(v){ return state.cardLevelMap[v] || 1; }
 
@@ -1526,14 +1942,15 @@ function showScreen(name){
   document.getElementById('title-screen').classList.toggle('hidden', name !== 'title');
   document.getElementById('help-screen').classList.toggle('hidden', name !== 'help');
   document.getElementById('game-screen').classList.toggle('hidden', name !== 'game');
+  document.getElementById('timeattack-screen').classList.toggle('hidden', name !== 'timeattack');
 }
 
-function runStartCountdown(cb){
+function runStartCountdown(cb, overlayId='countdown-overlay', contentId='countdown-content', textId='countdown-text', rot90=(state.mode==='local2p')){
   const seq = ['3','2','1','START!'];
-  const overlay = document.getElementById('countdown-overlay');
-  const content = document.getElementById('countdown-content');
-  const text = document.getElementById('countdown-text');
-  content.classList.toggle('rot90', state.mode === 'local2p');
+  const overlay = document.getElementById(overlayId);
+  const content = document.getElementById(contentId);
+  const text = document.getElementById(textId);
+  content.classList.toggle('rot90', rot90);
   overlay.classList.remove('hidden');
   let i = 0;
   function step(){
@@ -1579,18 +1996,28 @@ function showCharacterIntro(cb){
   }, 1800);
 }
 
+function currentUIMode(){
+  const btn = document.querySelector('.mode-btn.selected');
+  return btn ? btn.dataset.mode : 'single';
+}
+
 function syncSettingsFromUI(){
   state.mode = document.querySelector('.mode-btn.selected').dataset.mode;
   const cpuLevel = document.querySelector('.cpu-level-btn.selected').dataset.level;
   state.cpuLevel = (cpuLevel === 'MAX') ? 'MAX' : parseInt(cpuLevel,10);
-  state.selectedLevels = Array.from(document.querySelectorAll('.level-toggle-btn.selected')).map(el=>parseInt(el.dataset.value,10));
+  if (state.mode === 'timeAttack'){
+    const taBtn = document.querySelector('.level-toggle-btn.selected');
+    if (taBtn) state.timeAttackLevel = parseInt(taBtn.dataset.value,10);
+  } else {
+    state.selectedLevels = Array.from(document.querySelectorAll('.level-toggle-btn.selected')).map(el=>parseInt(el.dataset.value,10));
+  }
   state.soundOn = document.getElementById('sound-toggle-btn').dataset.on !== 'false';
 }
 function saveSettings(){
   try{
     localStorage.setItem('primeSpeedSettings', JSON.stringify({
       mode: state.mode, cpuLevel: state.cpuLevel,
-      selectedLevels: state.selectedLevels, soundOn: state.soundOn
+      selectedLevels: state.selectedLevels, timeAttackLevel: state.timeAttackLevel, soundOn: state.soundOn
     }));
   }catch(e){}
 }
@@ -1613,11 +2040,9 @@ function loadSettings(){
         b.classList.toggle('selected', val === s.cpuLevel);
       });
     }
-    if (Array.isArray(s.selectedLevels)){
-      document.querySelectorAll('.level-toggle-btn').forEach(b=>{
-        b.classList.toggle('selected', s.selectedLevels.includes(parseInt(b.dataset.value,10)));
-      });
-    }
+    if (Array.isArray(s.selectedLevels)) state.selectedLevels = s.selectedLevels;
+    if (typeof s.timeAttackLevel === 'number') state.timeAttackLevel = s.timeAttackLevel;
+    renderLevelToggleButtons();
     if (typeof s.soundOn === 'boolean'){
       const btn = document.getElementById('sound-toggle-btn');
       btn.dataset.on = s.soundOn ? 'true' : 'false';
@@ -1724,10 +2149,15 @@ function goToTitle(){
   clearCPUTimer();
   clearTenCountTimer();
   clearCharacterIntroTimer();
+  clearTimeAttackTimerLoop();
+  clearTimeAttackFeedbackTimer();
   state.phase = 'TITLE';
   document.getElementById('result-overlay').classList.add('hidden');
   document.getElementById('round-overlay').classList.add('hidden');
   document.getElementById('character-intro-overlay').classList.add('hidden');
+  document.getElementById('ta-pause-overlay').classList.add('hidden');
+  document.getElementById('ta-clear-overlay').classList.add('hidden');
+  document.getElementById('ta-gameover-overlay').classList.add('hidden');
   showScreen('title');
 }
 
@@ -1782,9 +2212,19 @@ function updateLevelWarning(){
   document.getElementById('start-btn').disabled = !anyChecked;
 }
 function updateCpuFieldsetVisibility(){
-  const selected = document.querySelector('.mode-btn.selected');
-  const mode = selected ? selected.dataset.mode : 'single';
+  const mode = currentUIMode();
   document.getElementById('cpu-level-fieldset').classList.toggle('hidden', mode !== 'single');
+}
+function renderLevelToggleButtons(){
+  const mode = currentUIMode();
+  document.querySelectorAll('.level-toggle-btn').forEach(btn=>{
+    const val = parseInt(btn.dataset.value,10);
+    const selected = (mode === 'timeAttack') ? (state.timeAttackLevel === val) : state.selectedLevels.includes(val);
+    btn.classList.toggle('selected', selected);
+  });
+  document.getElementById('level-fieldset-legend').textContent = (mode === 'timeAttack')
+    ? '出題レベル（1つ選んでください）'
+    : '出題レベル（複数選択可）';
 }
 
 let lastTouchEndTime = 0;
@@ -1797,6 +2237,7 @@ document.addEventListener('touchend', (e)=>{
 document.addEventListener('DOMContentLoaded', ()=>{
   initTitleBackground();
   loadSettings();
+  renderLevelToggleButtons();
   updateLevelWarning();
   updateCpuFieldsetVisibility();
 
@@ -1806,6 +2247,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       document.querySelectorAll('.mode-btn').forEach(b=> b.classList.remove('selected'));
       btn.classList.add('selected');
       updateCpuFieldsetVisibility();
+      renderLevelToggleButtons();
+      updateLevelWarning();
     });
   });
   document.querySelectorAll('.cpu-level-btn').forEach(btn=>{
@@ -1818,7 +2261,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.querySelectorAll('.level-toggle-btn').forEach(btn=>{
     btn.addEventListener('pointerdown', (e)=>{
       e.preventDefault();
-      btn.classList.toggle('selected');
+      const val = parseInt(btn.dataset.value,10);
+      if (currentUIMode() === 'timeAttack'){
+        state.timeAttackLevel = val;
+      } else {
+        const idx = state.selectedLevels.indexOf(val);
+        if (idx >= 0) state.selectedLevels.splice(idx,1); else state.selectedLevels.push(val);
+      }
+      renderLevelToggleButtons();
       updateLevelWarning();
     });
   });
@@ -1844,7 +2294,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     e.preventDefault();
     if (document.getElementById('start-btn').disabled) return;
     ensureAudio();
-    startGame();
+    if (currentUIMode() === 'timeAttack') startTimeAttack(); else startGame();
   });
 
   document.getElementById('p1-declare').addEventListener('pointerdown', (e)=>{
@@ -1894,6 +2344,37 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (content.contains(e.target)) return;
     e.preventDefault();
     content.classList.toggle('peeking');
+  });
+
+  document.getElementById('ta-pause-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    openTimeAttackPauseMenu();
+  });
+  document.getElementById('ta-pause-yes').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    confirmTimeAttackPauseToTitle();
+  });
+  document.getElementById('ta-pause-no').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    resumeTimeAttackFromPause();
+  });
+  document.getElementById('ta-clear-retry-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    retryTimeAttack();
+  });
+  document.getElementById('ta-clear-title-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    resetTimeAttackRun();
+    goToTitle();
+  });
+  document.getElementById('ta-gameover-retry-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    retryTimeAttack();
+  });
+  document.getElementById('ta-gameover-title-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    resetTimeAttackRun();
+    goToTitle();
   });
 });
 </script>
