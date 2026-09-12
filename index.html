@@ -1126,8 +1126,13 @@ function refillHandSlot(playerId, index){
   if (player.hand[index] !== null) return;
   const next = player.deck[0];
   if (next === undefined || next === 'FINISH'){
+    player.hand[index] = 'EMPTY';
     render();
-    endGame(playerId);
+    if (player.hand.every(c => c === 'EMPTY')){
+      endGame(playerId);
+    } else if (state.phase === 'PLAYING'){
+      checkRoundEnd();
+    }
     return;
   }
   player.hand[index] = player.deck.shift();
@@ -1302,7 +1307,7 @@ function playCard(playerId, index){
   const player = state.players[playerId];
   if (player.locked) return;
   const prime = player.hand[index];
-  if (prime === undefined || prime === null) return;
+  if (prime === undefined || prime === null || prime === 'EMPTY') return;
   state.actionLockUntil[playerId] = Date.now() + 120;
 
   const cardEl = document.querySelector(`.card[data-player="${playerId}"][data-index="${index}"]`);
@@ -1367,7 +1372,7 @@ function cpuAct(){
   const legalIdx = [];
   const illegalIdx = [];
   hand.forEach((c,i)=>{
-    if (c === null) return;
+    if (c === null || c === 'EMPTY') return;
     if ((state.remainingFactors[c]||0) > 0) legalIdx.push(i); else illegalIdx.push(i);
   });
   const cfg = CPU_LEVELS[state.cpuLevel];
@@ -1419,7 +1424,7 @@ function renderHandRow(playerId, containerId){
     const btn = document.createElement('button');
     btn.dataset.player = playerId;
     btn.dataset.index = idx;
-    if (val === null){
+    if (val === null || val === 'EMPTY'){
       btn.className = 'card empty-slot';
       btn.disabled = true;
       container.appendChild(btn);
