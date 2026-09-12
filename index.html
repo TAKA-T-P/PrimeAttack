@@ -1027,8 +1027,11 @@ function buildCompositeDeck(){
   state.compositeDiscard = [];
 }
 function computeCounts(){
-  const includeHigh = state.selectedLevels.includes(3) || state.selectedLevels.includes(4);
-  return includeHigh ? {2:6,3:5,5:4,7:4,11:4} : {2:6,3:5,5:4,7:4,11:0};
+  const hasLow = state.selectedLevels.includes(1) || state.selectedLevels.includes(2);
+  const hasHigh = state.selectedLevels.includes(3) || state.selectedLevels.includes(4);
+  if (hasLow && hasHigh) return {2:5,3:4,5:4,7:3,11:2};
+  if (hasHigh) return {2:5,3:4,5:3,7:3,11:3};
+  return {2:6,3:5,5:4,7:3,11:0};
 }
 function buildPrimeDeck(counts){
   let cards = [];
