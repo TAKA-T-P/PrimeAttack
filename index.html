@@ -576,7 +576,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 .ta-top-row{
   display:flex;justify-content:space-between;align-items:center;
-  font-size:clamp(12px,3.6vw,15px);color:var(--sub);
+  font-size:clamp(14px,4.2vw,17px);color:var(--sub);
   flex:0 0 auto;
 }
 .ta-timer{
@@ -603,12 +603,12 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   display:flex;flex-direction:column;align-items:center;gap:4px;
 }
 .ta-hint-btn{
-  padding:7px 12px;border-radius:20px;border:1px solid #ffb300;
-  background:rgba(255,179,0,0.15);color:#ffb300;font-size:13px;font-weight:700;
+  padding:8px 14px;border-radius:20px;border:1px solid #ffb300;
+  background:rgba(255,179,0,0.15);color:#ffb300;font-size:15px;font-weight:700;
   white-space:nowrap;
 }
 .ta-hint-btn:disabled{opacity:0.35;border-color:#555;color:#888;background:transparent;}
-.ta-hint-uses-left{font-size:11px;color:var(--sub);white-space:nowrap;}
+.ta-hint-uses-left{font-size:13px;color:var(--sub);white-space:nowrap;}
 .ta-hint-remaining{
   min-height:1.3em;
   font-size:clamp(16px,4.5vw,20px);font-weight:800;color:#ffb300;
@@ -655,8 +655,22 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   50%{text-shadow:0 0 18px rgba(255,213,79,0.95),0 0 34px rgba(255,213,79,0.75);}
 }
 .ta-best-line{font-size:clamp(16px,4.5vw,22px);font-weight:700;color:var(--sub);}
+.ta-clear-subtitle{font-size:clamp(18px,5vw,24px);font-weight:700;color:#fff;}
 .ta-result-detail{font-size:clamp(12px,3.4vw,14px);color:var(--sub);}
-#ta-clear-overlay,#ta-gameover-overlay{background:rgba(0,0,0,0.85);}
+#ta-clear-overlay,#ta-gameover-overlay{background:rgba(0,0,0,0.85);overflow-y:auto;padding:24px 0;}
+.ta-history{width:100%;max-width:280px;}
+.ta-history-title{font-size:13px;color:var(--sub);text-align:center;margin-bottom:6px;}
+.ta-history-list{
+  max-height:140px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  border:1px solid #2c3244;border-radius:10px;
+  padding:8px 12px;
+  background:rgba(255,255,255,0.04);
+}
+.ta-history-item{
+  font-size:13px;color:var(--text);
+  padding:3px 0;
+  text-align:left;
+}
 </style>
 </head>
 <body>
@@ -896,7 +910,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   <div id="ta-clear-overlay" class="overlay hidden">
     <div class="result-content">
       <div id="ta-clear-text">CLEAR!</div>
-      <div>10問正解！</div>
+      <div id="ta-clear-subtitle" class="ta-clear-subtitle"></div>
       <div id="ta-clear-time" class="ta-result-time"></div>
       <div id="ta-clear-best" class="ta-best-line"></div>
       <div id="ta-clear-detail" class="ta-result-detail"></div>
@@ -904,6 +918,10 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div class="result-btn-row">
         <button id="ta-clear-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-clear-title-btn" class="result-btn">タイトルへ</button>
+      </div>
+      <div class="ta-history">
+        <div class="ta-history-title">問題履歴</div>
+        <div id="ta-clear-history-list" class="ta-history-list"></div>
       </div>
     </div>
   </div>
@@ -914,10 +932,13 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div>お手つきが3回になりました</div>
       <div id="ta-gameover-score" class="ta-result-detail"></div>
       <div id="ta-gameover-time" class="ta-result-time"></div>
-      <div id="ta-gameover-answer" class="ta-result-detail"></div>
       <div class="result-btn-row">
         <button id="ta-gameover-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-gameover-title-btn" class="result-btn">タイトルへ</button>
+      </div>
+      <div class="ta-history">
+        <div class="ta-history-title">問題履歴</div>
+        <div id="ta-gameover-history-list" class="ta-history-list"></div>
       </div>
     </div>
   </div>
@@ -1860,6 +1881,7 @@ function gameOverTimeAttack(){
 function showTimeAttackClearScreen(isNewBest){
   const ta = state.timeAttack;
   document.getElementById('ta-pause-btn').classList.add('hidden');
+  document.getElementById('ta-clear-subtitle').textContent = LEVEL_LABELS[state.timeAttackLevel] + '　10問正解！';
   const timeEl = document.getElementById('ta-clear-time');
   timeEl.textContent = 'TIME ' + formatTime(ta.finalTimeMs);
   timeEl.classList.toggle('ta-new-best', !!isNewBest);
@@ -1872,6 +1894,7 @@ function showTimeAttackClearScreen(isNewBest){
   document.getElementById('ta-clear-hint-detail').textContent = ta.hintCount > 0
     ? `ヒント使用 ${ta.hintCount}回（+${hintPenalty}秒）`
     : 'ヒント使用なし！';
+  renderTimeAttackHistory('ta-clear-history-list');
   document.getElementById('ta-clear-overlay').classList.remove('hidden');
 }
 function showTimeAttackGameOverScreen(){
@@ -1879,8 +1902,16 @@ function showTimeAttackGameOverScreen(){
   document.getElementById('ta-pause-btn').classList.add('hidden');
   document.getElementById('ta-gameover-score').textContent = `正解 ${ta.correctCount} / 10`;
   document.getElementById('ta-gameover-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
-  document.getElementById('ta-gameover-answer').textContent = factorsToString(ta.currentNumber);
+  renderTimeAttackHistory('ta-gameover-history-list');
   document.getElementById('ta-gameover-overlay').classList.remove('hidden');
+}
+
+function renderTimeAttackHistory(elementId){
+  const ta = state.timeAttack;
+  const shown = ta.questions.slice(0, ta.questionIndex + 1);
+  document.getElementById(elementId).innerHTML = shown
+    .map((num, i) => `<div class="ta-history-item">第${i+1}問　${factorsToString(num)}</div>`)
+    .join('');
 }
 
 function showTimeAttackFeedback(type, text){
