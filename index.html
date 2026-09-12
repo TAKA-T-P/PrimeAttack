@@ -904,6 +904,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div>お手つきが3回になりました</div>
       <div id="ta-gameover-score" class="ta-result-detail"></div>
       <div id="ta-gameover-time" class="ta-result-time"></div>
+      <div id="ta-gameover-answer" class="ta-result-detail"></div>
       <div class="result-btn-row">
         <button id="ta-gameover-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-gameover-title-btn" class="result-btn">タイトルへ</button>
@@ -1863,6 +1864,7 @@ function showTimeAttackGameOverScreen(){
   document.getElementById('ta-pause-btn').classList.add('hidden');
   document.getElementById('ta-gameover-score').textContent = `正解 ${ta.correctCount} / 10`;
   document.getElementById('ta-gameover-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
+  document.getElementById('ta-gameover-answer').textContent = factorsToString(ta.currentNumber);
   document.getElementById('ta-gameover-overlay').classList.remove('hidden');
 }
 
