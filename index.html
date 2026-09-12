@@ -1352,6 +1352,15 @@ function playCard(playerId, index){
       setTimeout(()=> newEl.classList.remove('shake'), 350);
     }
   }
+
+  const isStrongCpu = state.cpuLevel === 'MAX' || (typeof state.cpuLevel === 'number' && state.cpuLevel >= 4);
+  if (playerId === 'p2' && state.mode === 'single' && isStrongCpu && state.phase === 'PLAYING' && !state.tenCount.active){
+    setTimeout(()=>{
+      if (state.phase === 'PLAYING' && !state.tenCount.active && state.players.p2.lockReason === 'mistake'){
+        declareTenCount('p2');
+      }
+    }, 400);
+  }
 }
 
 /* ================= CPU ================= */
