@@ -594,8 +594,13 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   width:clamp(90px,28vw,150px);
   font-size:clamp(26px,9vw,48px);
 }
-.ta-composite-row{
-  display:flex;align-items:center;gap:clamp(8px,3vw,16px);
+.ta-composite-wrap{
+  position:relative;width:100%;
+  display:flex;align-items:center;justify-content:center;
+}
+.ta-hint-col{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
 }
 .ta-hint-btn{
   padding:7px 12px;border-radius:20px;border:1px solid #ffb300;
@@ -603,6 +608,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   white-space:nowrap;
 }
 .ta-hint-btn:disabled{opacity:0.35;border-color:#555;color:#888;background:transparent;}
+.ta-hint-uses-left{font-size:11px;color:var(--sub);white-space:nowrap;}
 .ta-hint-remaining{
   min-height:1.3em;
   font-size:clamp(16px,4.5vw,20px);font-weight:800;color:#ffb300;
@@ -626,11 +632,11 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .ta-feedback.correct.show{animation:pop 0.3s ease;}
 .ta-feedback.mistake{color:var(--danger);}
 .ta-hint-toast{
-  position:absolute;left:0;right:0;top:calc(50% - 50px);
+  flex:0 0 auto;
+  min-height:1.3em;
   text-align:center;font-weight:800;color:#ffb300;
-  font-size:clamp(16px,5vw,22px);
-  text-shadow:0 2px 8px rgba(0,0,0,0.6);
-  opacity:0;pointer-events:none;transition:opacity 0.4s ease;
+  font-size:clamp(14px,4.2vw,18px);
+  opacity:0;transition:opacity 0.4s ease;
 }
 .ta-hint-toast.show{opacity:1;}
 .ta-hand-row{
@@ -861,14 +867,17 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div id="ta-mistake-count">お手つき 0 / 3</div>
     </div>
     <div class="ta-timer" id="ta-timer">TIME 00:00.00</div>
+    <div id="ta-hint-toast" class="ta-hint-toast"></div>
     <div class="ta-center">
-      <div class="ta-composite-row">
+      <div class="ta-composite-wrap">
         <div id="ta-composite-card" class="composite-card"></div>
-        <button type="button" id="ta-hint-btn" class="ta-hint-btn" disabled>ヒント</button>
+        <div class="ta-hint-col">
+          <button type="button" id="ta-hint-btn" class="ta-hint-btn" disabled>ヒント</button>
+          <div id="ta-hint-uses-left" class="ta-hint-uses-left"></div>
+        </div>
       </div>
       <div id="ta-hint-remaining" class="ta-hint-remaining"></div>
       <div id="ta-entered" class="ta-entered"></div>
-      <div id="ta-hint-toast" class="ta-hint-toast"></div>
       <div id="ta-feedback" class="ta-feedback"></div>
     </div>
     <div id="ta-hand" class="ta-hand-row hand-row"></div>
@@ -891,6 +900,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div id="ta-clear-time" class="ta-result-time"></div>
       <div id="ta-clear-best" class="ta-best-line"></div>
       <div id="ta-clear-detail" class="ta-result-detail"></div>
+      <div id="ta-clear-hint-detail" class="ta-result-detail"></div>
       <div class="result-btn-row">
         <button id="ta-clear-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-clear-title-btn" class="result-btn">タイトルへ</button>
@@ -1789,6 +1799,7 @@ function updateTimeAttackHintButton(){
   const btn = document.getElementById('ta-hint-btn');
   const enabled = ta.status === 'playing' && !ta.inputLocked && ta.enteredFactors.length > 0 && ta.hintCount < 3;
   btn.disabled = !enabled;
+  document.getElementById('ta-hint-uses-left').textContent = '残り' + Math.max(0, 3 - ta.hintCount) + '回';
 }
 
 function showTimeAttackHintToast(){
@@ -1857,6 +1868,10 @@ function showTimeAttackClearScreen(isNewBest){
   document.getElementById('ta-clear-detail').textContent = ta.mistakeCount > 0
     ? `お手つき ${ta.mistakeCount}回（+${penalty}秒）`
     : 'お手つきなし！';
+  const hintPenalty = ta.hintCount*10;
+  document.getElementById('ta-clear-hint-detail').textContent = ta.hintCount > 0
+    ? `ヒント使用 ${ta.hintCount}回（+${hintPenalty}秒）`
+    : 'ヒント使用なし！';
   document.getElementById('ta-clear-overlay').classList.remove('hidden');
 }
 function showTimeAttackGameOverScreen(){
