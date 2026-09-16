@@ -761,6 +761,131 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   padding:3px 0;
   text-align:left;
 }
+
+/* ---------- Help menu notify badge ---------- */
+.help-menu-notify-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:var(--danger);color:#fff;font-size:11px;font-weight:800;
+  min-width:20px;height:20px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;padding:0 5px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* ---------- Achievements list screen ---------- */
+#achievements-screen{
+  flex-direction:column;align-items:center;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  height:100dvh;width:100vw;
+  padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+  background:linear-gradient(160deg,#1a1440 0%,#2d1f72 55%,#160f38 100%);
+}
+.achievements-summary{text-align:center;color:var(--text);font-size:14px;line-height:1.6;}
+.achievements-summary .big{font-size:20px;font-weight:800;color:#fff;}
+.achievements-tabs{
+  display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;
+  width:100%;
+}
+.achievements-tab-btn{
+  flex:0 0 auto;padding:8px 14px;border-radius:20px;border:1px solid #2c3244;
+  background:#12151f;color:var(--sub);font-size:13px;font-weight:700;white-space:nowrap;
+}
+.achievements-tab-btn.selected{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+.achievements-list{display:flex;flex-direction:column;gap:12px;width:100%;}
+.achievement-card{
+  background:rgba(255,255,255,0.06);border:1px solid #2c3244;border-radius:14px;padding:14px 16px;
+}
+.achievement-card.complete{border-color:#ffd54f;}
+.achievement-card-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
+.achievement-card-title{font-weight:800;color:#fff;font-size:15px;overflow-wrap:break-word;}
+.achievement-complete-badge{font-size:11px;font-weight:800;color:#160f38;background:#ffd54f;padding:3px 8px;border-radius:8px;white-space:nowrap;flex:0 0 auto;}
+.achievement-tier-row{
+  display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:var(--text);
+}
+.achievement-tier-row.locked{opacity:0.4;}
+.achievement-tier-icon{font-size:18px;flex:0 0 auto;}
+.achievement-tier-name{flex:1;overflow-wrap:break-word;}
+.achievement-tier-status{font-size:11px;color:var(--sub);white-space:nowrap;flex:0 0 auto;}
+.achievement-tier-new{
+  font-size:10px;font-weight:800;color:#fff;background:var(--danger);
+  padding:2px 6px;border-radius:6px;margin-left:2px;flex:0 0 auto;
+}
+.achievement-next-target{font-size:12px;color:var(--sub);margin-top:8px;overflow-wrap:break-word;}
+.achievement-progress-track{
+  width:100%;height:10px;border-radius:6px;background:rgba(255,255,255,0.08);
+  margin-top:4px;overflow:hidden;
+}
+.achievement-progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 0.3s ease;}
+.achievement-progress-label{font-size:11px;color:var(--sub);text-align:right;margin-top:2px;}
+
+/* ---------- あと少し (almost there) ---------- */
+.almost-there-block{
+  text-align:center;background:rgba(255,255,255,0.06);border:1px solid #2c3244;
+  border-radius:12px;padding:10px 14px;
+}
+.almost-there-block.hidden{display:none !important;}
+.almost-there-title{font-size:12px;color:var(--sub);margin-bottom:4px;}
+.almost-there-text{font-size:14px;font-weight:700;color:#fff;overflow-wrap:break-word;}
+
+/* ---------- Achievement unlock overlay ---------- */
+#achievement-unlock-overlay{
+  position:fixed;inset:0;z-index:700;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.65);
+}
+.achievement-unlock-content{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:rgba(20,20,34,0.94);border-radius:22px;padding:30px 26px;
+  max-width:min(88vw,380px);
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+  text-align:center;
+}
+.achievement-unlock-content.rank-bronze{border:2px solid #cd7f32;animation:unlockPulseBronze 0.35s ease-in-out 2;}
+.achievement-unlock-content.rank-silver{border:2px solid #dcdcdc;animation:unlockPulseSilver 0.3s ease-in-out 3;}
+.achievement-unlock-content.rank-gold{border:2px solid #ffd700;animation:unlockPulseGold 0.3s ease-in-out 4;}
+@keyframes unlockPulseBronze{0%,100%{box-shadow:0 0 16px 2px rgba(205,127,50,0.4);}50%{box-shadow:0 0 30px 8px rgba(205,127,50,0.75);}}
+@keyframes unlockPulseSilver{0%,100%{box-shadow:0 0 20px 4px rgba(220,220,220,0.45);}50%{box-shadow:0 0 38px 10px rgba(220,220,220,0.8);}}
+@keyframes unlockPulseGold{0%,100%{box-shadow:0 0 24px 6px rgba(255,215,0,0.5);}50%{box-shadow:0 0 46px 14px rgba(255,215,0,0.9);}}
+@media (prefers-reduced-motion: reduce){
+  .achievement-unlock-content.rank-bronze,.achievement-unlock-content.rank-silver,.achievement-unlock-content.rank-gold{
+    animation:none !important;
+  }
+  #unlock-medal{animation:none !important;}
+}
+.unlock-header{font-size:14px;font-weight:800;color:var(--sub);letter-spacing:1px;}
+#unlock-medal{font-size:64px;line-height:1;animation:pop 0.35s ease;}
+#unlock-title{font-size:clamp(18px,5.5vw,22px);font-weight:800;color:#fff;}
+#unlock-condition{font-size:13px;color:var(--sub);}
+#unlock-counter{font-size:13px;color:var(--sub);font-weight:700;}
+.unlock-rankup{text-align:center;}
+.unlock-rankup-label{font-size:12px;font-weight:800;color:#ffd54f;letter-spacing:1px;}
+.unlock-rankup-icons{font-size:22px;margin-top:2px;}
+.unlock-btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.unlock-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:22px;}
+.unlock-particle{
+  position:absolute;top:32%;width:8px;height:8px;border-radius:2px;
+  animation:unlockParticleFall 1.3s ease-out forwards;
+}
+@keyframes unlockParticleFall{
+  0%{transform:translate(0,0) rotate(0deg);opacity:1;}
+  100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0;}
+}
+@media (prefers-reduced-motion: reduce){
+  .unlock-particle{display:none;}
+}
+.achievement-unlock-summary{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  background:rgba(20,20,34,0.94);border-radius:22px;padding:26px 22px;
+  max-width:min(90vw,400px);max-height:80vh;overflow-y:auto;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+}
+.unlock-summary-list{display:flex;flex-direction:column;gap:8px;width:100%;}
+.unlock-summary-item{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.06);border-radius:10px;padding:8px 12px;
+  font-size:13px;color:var(--text);text-align:left;
+}
+.unlock-summary-item .icon{font-size:20px;flex:0 0 auto;}
 </style>
 </head>
 <body>
@@ -819,9 +944,9 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     <h2 class="help-title">ヘルプ</h2>
     <button type="button" id="help-menu-howto-btn" class="help-menu-btn">📖 あそびかた</button>
     <button type="button" id="help-menu-multiples-btn" class="help-menu-btn">🔍 倍数の見分け方</button>
-    <button type="button" id="help-menu-achievement-btn" class="help-menu-btn" disabled aria-disabled="true">
+    <button type="button" id="help-menu-achievement-btn" class="help-menu-btn" style="position:relative;">
       <span>🏆 アチーブメント</span>
-      <span class="help-menu-badge">COMING SOON</span>
+      <span id="help-menu-achievement-badge" class="help-menu-notify-badge hidden">0</span>
     </button>
     <a href="https://taka-t-p.github.io/math-app-portal/" target="_blank" rel="noopener noreferrer" id="help-menu-portal-link" class="help-menu-btn">
       <span>🧪 KEC数学科ラボへ</span>
@@ -979,6 +1104,16 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   </div>
 </div>
 
+<div id="achievements-screen" class="screen hidden">
+  <div class="help-content" style="max-width:520px;">
+    <h2 class="help-title">アチーブメント</h2>
+    <div id="achievements-summary" class="achievements-summary"></div>
+    <div id="achievements-tabs" class="achievements-tabs"></div>
+    <div id="achievements-list" class="achievements-list"></div>
+    <button type="button" id="achievements-back-btn" class="start-btn" style="margin-top:6px;">メニューへ戻る</button>
+  </div>
+</div>
+
 <div id="game-screen" class="screen hidden">
   <div id="p2-lowstock-bg" class="lowstock-bg lowstock-bg-top"></div>
   <div id="p1-lowstock-bg" class="lowstock-bg lowstock-bg-bottom"></div>
@@ -1060,6 +1195,10 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
         <button id="retry-btn" class="result-btn">もう一度</button>
         <button id="title-btn" class="result-btn">タイトルへ</button>
       </div>
+      <div id="result-almost-there" class="almost-there-block hidden">
+        <div class="almost-there-title">🎯 あと少し！</div>
+        <div id="result-almost-there-text" class="almost-there-text"></div>
+      </div>
     </div>
   </div>
   <div id="pause-overlay" class="overlay hidden">
@@ -1117,6 +1256,10 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
         <button id="ta-clear-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-clear-title-btn" class="result-btn">タイトルへ</button>
       </div>
+      <div id="ta-clear-almost-there" class="almost-there-block hidden">
+        <div class="almost-there-title">🎯 あと少し！</div>
+        <div id="ta-clear-almost-there-text" class="almost-there-text"></div>
+      </div>
       <div class="ta-history">
         <div class="ta-history-title">問題履歴</div>
         <div id="ta-clear-history-list" class="ta-history-list"></div>
@@ -1134,11 +1277,39 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
         <button id="ta-gameover-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-gameover-title-btn" class="result-btn">タイトルへ</button>
       </div>
+      <div id="ta-gameover-almost-there" class="almost-there-block hidden">
+        <div class="almost-there-title">🎯 あと少し！</div>
+        <div id="ta-gameover-almost-there-text" class="almost-there-text"></div>
+      </div>
       <div class="ta-history">
         <div class="ta-history-title">問題履歴</div>
         <div id="ta-gameover-history-list" class="ta-history-list"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<div id="achievement-unlock-overlay" class="hidden">
+  <div id="achievement-unlock-content" class="achievement-unlock-content">
+    <div id="unlock-rankup" class="unlock-rankup hidden">
+      <div class="unlock-rankup-label">RANK UP!</div>
+      <div id="unlock-rankup-icons" class="unlock-rankup-icons"></div>
+    </div>
+    <div class="unlock-header">ACHIEVEMENT GET!</div>
+    <div id="unlock-medal"></div>
+    <div id="unlock-title"></div>
+    <div id="unlock-condition"></div>
+    <div id="unlock-counter"></div>
+    <div class="unlock-btn-row">
+      <button type="button" id="unlock-summary-btn" class="result-btn hidden">まとめて確認</button>
+      <button type="button" id="unlock-next-btn" class="result-btn">次へ</button>
+    </div>
+    <div id="unlock-particles" class="unlock-particles"></div>
+  </div>
+  <div id="achievement-unlock-summary" class="achievement-unlock-summary hidden">
+    <div class="unlock-header">新しく獲得した称号</div>
+    <div id="unlock-summary-list" class="unlock-summary-list"></div>
+    <button type="button" id="unlock-summary-ok-btn" class="result-btn">OK</button>
   </div>
 </div>
 
@@ -1271,6 +1442,361 @@ const CPU_CHARACTERS = {
   }
 };
 
+/* ================= ACHIEVEMENTS: DATA ================= */
+function cpuRankNumber(cpuLevel){ return cpuLevel === 'MAX' ? 6 : cpuLevel; }
+
+const ACHIEVEMENT_SERIES = [
+  // ---- 4-1. プレイ回数・CPU攻略 ----
+  { id:'matches_played', category:'cpu', label:'試合数', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.matchesPlayed, unit:'試合',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'はじめの一戦',target:1,conditionText:'累計1試合プレイ'},
+      {rank:'silver',icon:'🥈',title:'プライムファイター',target:30,conditionText:'累計30試合プレイ'},
+      {rank:'gold',icon:'🥇',title:'百戦錬磨',target:100,conditionText:'累計100試合プレイ'}
+    ]
+  },
+  { id:'cpu_lv1_wins', category:'cpu', label:'CPU Lv.1勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.cpuWins.lv1, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'ピヨファクター撃破',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'ピヨハンター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'ピヨファクターマスター',target:10,conditionText:'10勝'}
+    ]
+  },
+  { id:'cpu_lv2_wins', category:'cpu', label:'CPU Lv.2勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.cpuWins.lv2, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'プライムウルフ撃破',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'ウルフハンター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'プライムウルフマスター',target:10,conditionText:'10勝'}
+    ]
+  },
+  { id:'cpu_lv3_wins', category:'cpu', label:'CPU Lv.3勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.cpuWins.lv3, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'素数忍者破り',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'シノビハンター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'素数忍者マスター',target:10,conditionText:'10勝'}
+    ]
+  },
+  { id:'cpu_lv4_wins', category:'cpu', label:'CPU Lv.4勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.cpuWins.lv4, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'魔導士破り',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'魔導士ハンター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'ファクター魔導士マスター',target:10,conditionText:'10勝'}
+    ]
+  },
+  { id:'cpu_lv5_wins', category:'cpu', label:'CPU Lv.5勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.cpuWins.lv5, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'ドラゴンスレイヤー',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'ドラゴンハンター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'竜王を超えし者',target:10,conditionText:'10勝'}
+    ]
+  },
+  { id:'cpu_max_wins', category:'cpu', label:'CPU Lv.MAX勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.cpuWins.max, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'PRIME-Xブレイカー',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'PRIME-Xハンター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'人類の勝利',target:10,conditionText:'10勝'}
+    ]
+  },
+
+  // ---- 4-2. 対戦テクニック ----
+  { id:'no_miss_cpu_win', category:'technique', label:'お手つき0回で勝利', direction:'higher', progressType:'level',
+    getValue:(s)=>s.bestNoMissCpuRank,
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'慎重派',target:1,conditionText:'Lv.1以上に勝利'},
+      {rank:'silver',icon:'🥈',title:'完全無欠',target:4,conditionText:'Lv.4以上に勝利'},
+      {rank:'gold',icon:'🥇',title:'パーフェクトMAX',target:6,conditionText:'Lv.MAXに勝利'}
+    ]
+  },
+  { id:'mistake_comeback_win', category:'technique', label:'お手つき後に勝利', direction:'higher', progressType:'best',
+    getValue:(s)=>s.bestMistakesInCpuWin, unit:'回',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'起死回生',target:1,conditionText:'お手つき後に勝利'},
+      {rank:'silver',icon:'🥈',title:'七転び八起き',target:3,conditionText:'1試合で3回以上お手つきして勝利'},
+      {rank:'gold',icon:'🥇',title:'不屈の闘神',target:7,conditionText:'1試合で7回以上お手つきして勝利'}
+    ]
+  },
+  { id:'pass_count', category:'technique', label:'パス使用回数', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.passCount, unit:'回',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'戦略的撤退',target:1,conditionText:'はじめてパスを使用'},
+      {rank:'silver',icon:'🥈',title:'パスの達人',target:10,conditionText:'累計10回使用'},
+      {rank:'gold',icon:'🥇',title:'パスマスター',target:30,conditionText:'累計30回使用'}
+    ]
+  },
+  { id:'correct_streak', category:'technique', label:'連続正解枚数', direction:'higher', progressType:'best',
+    getValue:(s)=>s.bestCorrectStreak, unit:'枚',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'コンボスターター',target:3,conditionText:'お手つきせず連続3枚正解'},
+      {rank:'silver',icon:'🥈',title:'セブンコンボ',target:7,conditionText:'お手つきせず連続7枚正解'},
+      {rank:'gold',icon:'🥇',title:'ノンストップ10',target:10,conditionText:'お手つきせず連続10枚正解'}
+    ]
+  },
+  { id:'round_sweep', category:'technique', label:'1ターンをすべて自分で分解', direction:'higher', progressType:'level',
+    getValue:(s)=>s.bestSweepCpuRank,
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'ターン総取り',target:1,conditionText:'Lv.1以上で達成'},
+      {rank:'silver',icon:'🥈',title:'高難度総取り',target:4,conditionText:'Lv.4以上で達成'},
+      {rank:'gold',icon:'🥇',title:'MAX完全分解',target:6,conditionText:'Lv.MAXで達成'}
+    ]
+  },
+  { id:'cpu_win_streak', category:'technique', label:'CPU戦の連勝数', direction:'higher', progressType:'streak',
+    getValue:(s)=>s.bestCpuWinStreak, getCurrentValue:(s)=>s.currentCpuWinStreak, unit:'連勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'連勝スタート',target:2,conditionText:'2連勝'},
+      {rank:'silver',icon:'🥈',title:'勢いが止まらない',target:5,conditionText:'5連勝'},
+      {rank:'gold',icon:'🥇',title:'無双',target:10,conditionText:'10連勝'}
+    ]
+  },
+  { id:'high_cpu_three_streak', category:'technique', label:'高レベルCPUへの3連勝', direction:'higher', progressType:'streak',
+    getValue:(s)=>s.bestStreakLv4Plus, getCurrentValue:(s)=>s.currentStreakLv4Plus, unit:'連勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'強敵三連破',target:3,conditionText:'Lv.4以上に3連勝',
+        getValue:(s)=>s.bestStreakLv4Plus, getCurrentValue:(s)=>s.currentStreakLv4Plus},
+      {rank:'silver',icon:'🥈',title:'ドラゴン三連破',target:3,conditionText:'Lv.5以上に3連勝',
+        getValue:(s)=>s.bestStreakLv5Plus, getCurrentValue:(s)=>s.currentStreakLv5Plus},
+      {rank:'gold',icon:'🥇',title:'PRIME-X三連破',target:3,conditionText:'Lv.MAXに3連勝',
+        getValue:(s)=>s.bestStreakMax, getCurrentValue:(s)=>s.currentStreakMax}
+    ]
+  },
+  { id:'comeback_lead', category:'technique', label:'リードされてから逆転勝利', direction:'higher', progressType:'best',
+    getValue:(s)=>s.bestComebackLead, unit:'枚',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'逆転の一手',target:3,conditionText:'3枚以上リードされてから勝利'},
+      {rank:'silver',icon:'🥈',title:'大逆転',target:5,conditionText:'5枚以上リードされてから勝利'},
+      {rank:'gold',icon:'🥇',title:'奇跡の大逆転',target:7,conditionText:'7枚以上リードされてから勝利'}
+    ]
+  },
+  { id:'close_win_count', category:'technique', label:'1枚差以内で勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.closeWinCount, unit:'回',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'紙一重',target:1,conditionText:'1回勝利'},
+      {rank:'silver',icon:'🥈',title:'接戦巧者',target:3,conditionText:'3回勝利'},
+      {rank:'gold',icon:'🥇',title:'接戦王',target:10,conditionText:'10回勝利'}
+    ]
+  },
+  { id:'big_margin_win', category:'technique', label:'大差をつけて勝利', direction:'higher', progressType:'best',
+    getValue:(s)=>s.bestWinMargin, unit:'枚',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'圧勝',target:4,conditionText:'4枚以上の差で勝利'},
+      {rank:'silver',icon:'🥈',title:'完全支配',target:7,conditionText:'7枚以上の差で勝利'},
+      {rank:'gold',icon:'🥇',title:'異次元の強さ',target:10,conditionText:'10枚以上の差で勝利'}
+    ]
+  },
+
+  // ---- 4-3. 2人対戦・出題レベル ----
+  { id:'two_player_games', category:'levels', label:'2人対戦回数', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.twoPlayerGames, unit:'回',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'はじめての対戦',target:1,conditionText:'1回プレイ'},
+      {rank:'silver',icon:'🥈',title:'友情勝負',target:10,conditionText:'10回プレイ'},
+      {rank:'gold',icon:'🥇',title:'永遠のライバル',target:30,conditionText:'30回プレイ'}
+    ]
+  },
+  { id:'high_question_wins', category:'levels', label:'上級・プロ級で勝利', direction:'higher', progressType:'cumulative',
+    getValue:(s)=>s.highQuestionWins, unit:'勝',
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'高難度デビュー',target:1,conditionText:'1勝'},
+      {rank:'silver',icon:'🥈',title:'高難度ファイター',target:3,conditionText:'3勝'},
+      {rank:'gold',icon:'🥇',title:'高難度マスター',target:10,conditionText:'10勝'}
+    ]
+  },
+  { id:'pro_only_cpu_win', category:'levels', label:'プロ級のみでCPUに勝利', direction:'higher', progressType:'level',
+    getValue:(s)=>s.bestProOnlyCpuRank,
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'プロ級挑戦者',target:1,conditionText:'Lv.1以上に勝利'},
+      {rank:'silver',icon:'🥈',title:'プロ級の覇者',target:4,conditionText:'Lv.4以上に勝利'},
+      {rank:'gold',icon:'🥇',title:'究極の素因数分解',target:6,conditionText:'Lv.MAXに勝利'}
+    ]
+  },
+
+  // ---- 4-4. タイムアタック ----
+  { id:'ta_beginner_time', category:'timeattack', label:'初級タイム', direction:'lower', progressType:'time', taLevel:1,
+    getValue:()=>state.timeAttackBest[1],
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'青のランナー',target:40000,conditionText:'40秒以内'},
+      {rank:'silver',icon:'🥈',title:'青の疾風',target:25000,conditionText:'25秒以内'},
+      {rank:'gold',icon:'🥇',title:'青の閃光',target:15000,conditionText:'15秒以内'}
+    ]
+  },
+  { id:'ta_intermediate_time', category:'timeattack', label:'中級タイム', direction:'lower', progressType:'time', taLevel:2,
+    getValue:()=>state.timeAttackBest[2],
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'緑のランナー',target:75000,conditionText:'75秒以内'},
+      {rank:'silver',icon:'🥈',title:'緑の疾風',target:40000,conditionText:'40秒以内'},
+      {rank:'gold',icon:'🥇',title:'緑の閃光',target:25000,conditionText:'25秒以内'}
+    ]
+  },
+  { id:'ta_advanced_time', category:'timeattack', label:'上級タイム', direction:'lower', progressType:'time', taLevel:3,
+    getValue:()=>state.timeAttackBest[3],
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'橙のランナー',target:150000,conditionText:'150秒以内'},
+      {rank:'silver',icon:'🥈',title:'橙の疾風',target:75000,conditionText:'75秒以内'},
+      {rank:'gold',icon:'🥇',title:'橙の閃光',target:50000,conditionText:'50秒以内'}
+    ]
+  },
+  { id:'ta_pro_time', category:'timeattack', label:'プロ級タイム', direction:'lower', progressType:'time', taLevel:4,
+    getValue:()=>state.timeAttackBest[4],
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'赤のランナー',target:300000,conditionText:'300秒以内'},
+      {rank:'silver',icon:'🥈',title:'赤の疾風',target:150000,conditionText:'150秒以内'},
+      {rank:'gold',icon:'🥇',title:'赤の閃光',target:100000,conditionText:'100秒以内'}
+    ]
+  },
+  { id:'ta_no_hint', category:'timeattack', label:'ヒント未使用クリア', direction:'higher', progressType:'level',
+    getValue:(s)=>s.bestNoHintLevel,
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'自力でクリア',target:1,conditionText:'初級以上'},
+      {rank:'silver',icon:'🥈',title:'自力の上級者',target:3,conditionText:'上級以上'},
+      {rank:'gold',icon:'🥇',title:'真の実力者',target:4,conditionText:'プロ級'}
+    ]
+  },
+  { id:'ta_no_miss', category:'timeattack', label:'ノーミスクリア', direction:'higher', progressType:'level',
+    getValue:(s)=>s.bestNoMissTimeAttackLevel,
+    tiers:[
+      {rank:'bronze',icon:'🥉',title:'ノーミスクリア',target:1,conditionText:'初級以上'},
+      {rank:'silver',icon:'🥈',title:'パーフェクトラン',target:3,conditionText:'上級以上'},
+      {rank:'gold',icon:'🥇',title:'完全無欠のプロ',target:4,conditionText:'プロ級'}
+    ]
+  }
+];
+
+const ACHIEVEMENT_CATEGORY_LABELS = { all:'すべて', cpu:'CPU攻略', technique:'テクニック', levels:'2人・出題レベル', timeattack:'タイムアタック' };
+const ACHIEVEMENT_TOTAL_COUNT = ACHIEVEMENT_SERIES.filter(s=>s.available !== false).length * 3;
+
+/* ================= ACHIEVEMENTS: LOGIC ================= */
+function defaultAchievementStats(){
+  return {
+    matchesPlayed:0,
+    cpuWins:{lv1:0,lv2:0,lv3:0,lv4:0,lv5:0,max:0},
+    bestNoMissCpuRank:0,
+    bestMistakesInCpuWin:0,
+    passCount:0,
+    bestCorrectStreak:0,
+    bestSweepCpuRank:0,
+    currentCpuWinStreak:0,
+    bestCpuWinStreak:0,
+    currentStreakLv4Plus:0,
+    currentStreakLv5Plus:0,
+    currentStreakMax:0,
+    bestStreakLv4Plus:0,
+    bestStreakLv5Plus:0,
+    bestStreakMax:0,
+    bestComebackLead:0,
+    closeWinCount:0,
+    bestWinMargin:0,
+    twoPlayerGames:0,
+    highQuestionWins:0,
+    bestProOnlyCpuRank:0,
+    bestNoHintLevel:0,
+    bestNoMissTimeAttackLevel:0
+  };
+}
+
+function loadAchievementData(){
+  const def = { schemaVersion:1, stats:defaultAchievementStats(), unlocked:{} };
+  try{
+    const raw = localStorage.getItem('primeAttackAchievementsV1');
+    if (!raw) return def;
+    const parsed = JSON.parse(raw);
+    const stats = defaultAchievementStats();
+    if (parsed && parsed.stats && typeof parsed.stats === 'object'){
+      Object.keys(stats).forEach(key=>{
+        const v = parsed.stats[key];
+        if (key === 'cpuWins'){
+          if (v && typeof v === 'object'){
+            Object.keys(stats.cpuWins).forEach(lv=>{
+              if (typeof v[lv] === 'number' && isFinite(v[lv]) && v[lv] >= 0) stats.cpuWins[lv] = v[lv];
+            });
+          }
+        } else if (typeof v === 'number' && isFinite(v) && v >= 0){
+          stats[key] = v;
+        }
+      });
+    }
+    const unlocked = {};
+    if (parsed && parsed.unlocked && typeof parsed.unlocked === 'object'){
+      Object.keys(parsed.unlocked).forEach(id=>{
+        const entry = parsed.unlocked[id];
+        if (entry && typeof entry === 'object'){
+          unlocked[id] = { unlockedAt: (typeof entry.unlockedAt === 'string') ? entry.unlockedAt : new Date().toISOString(), isNew: !!entry.isNew };
+        }
+      });
+    }
+    return { schemaVersion:1, stats, unlocked };
+  }catch(e){
+    return def;
+  }
+}
+function saveAchievementData(){
+  try{ localStorage.setItem('primeAttackAchievementsV1', JSON.stringify(state.achievements)); }catch(e){}
+}
+
+function achievementIsMet(direction, value, target){
+  if (value == null) return false;
+  return direction === 'lower' ? value <= target : value >= target;
+}
+function getAchievementValue(series, tier, stats){
+  const fn = tier.getValue || series.getValue;
+  return fn(stats);
+}
+function getAchievementDisplayValue(series, tier, stats){
+  const fn = tier.getCurrentValue || series.getCurrentValue || tier.getValue || series.getValue;
+  return fn(stats);
+}
+function getNextTier(series, unlocked){
+  for (const tier of series.tiers){
+    if (!unlocked[`${series.id}_${tier.rank}`]) return tier;
+  }
+  return null;
+}
+function evaluateAchievements(){
+  const stats = state.achievements.stats;
+  const unlocked = state.achievements.unlocked;
+  const newlyUnlocked = [];
+  ACHIEVEMENT_SERIES.forEach(series=>{
+    if (series.available === false) return;
+    series.tiers.forEach(tier=>{
+      const id = `${series.id}_${tier.rank}`;
+      if (unlocked[id]) return;
+      const val = getAchievementValue(series, tier, stats);
+      if (achievementIsMet(series.direction, val, tier.target)){
+        unlocked[id] = { unlockedAt: new Date().toISOString(), isNew:true };
+        newlyUnlocked.push({ id, series, tier });
+      }
+    });
+  });
+  return newlyUnlocked;
+}
+function getAchievementProgressPercent(series, tier, stats){
+  const val = getAchievementDisplayValue(series, tier, stats);
+  if (series.progressType === 'time'){
+    if (val == null) return 0;
+    return Math.min(100, Math.max(0, Math.round((tier.target / val) * 100)));
+  }
+  return Math.min(100, Math.max(0, Math.round(((val||0) / tier.target) * 100)));
+}
+function getRemainingText(series, tier, stats){
+  const val = getAchievementDisplayValue(series, tier, stats);
+  if (series.progressType === 'time'){
+    if (val == null) return `目標：${tier.conditionText}`;
+    const diffMs = val - tier.target;
+    if (diffMs <= 0) return '達成！';
+    return `あと${(diffMs/1000).toFixed(2)}秒短縮！`;
+  }
+  const diff = Math.max(0, tier.target - (val||0));
+  if (diff <= 0) return '達成！';
+  if (series.progressType === 'level') return `次は${tier.conditionText}で達成！`;
+  if (series.progressType === 'streak') return `あと${diff}連勝！`;
+  const unit = tier.unit || series.unit || '';
+  return `あと${diff}${unit}！`;
+}
+
 /* ================= STATE ================= */
 let state = {
   mode:'single',
@@ -1327,7 +1853,28 @@ let state = {
     hintCount:0,
     hintShown:false,
     hintToastTimeoutId:null
-  }
+  },
+
+  achievements:{ schemaVersion:1, stats:defaultAchievementStats(), unlocked:{} },
+  achievementFilter:'all',
+  achievementUnlockQueue:[],
+  achievementUnlockIndex:0,
+  achievementUnlockTimerId:null,
+  achievementRevealDelayTimerId:null,
+  resultCommitted:false,
+  runStats:{
+    playerMistakes:0,
+    playerPasses:0,
+    currentCorrectStreak:0,
+    maxCorrectStreak:0,
+    playerCardsPlayed:0,
+    cpuCardsPlayed:0,
+    maxCpuLead:0,
+    roundPlayerCards:0,
+    roundCpuCards:0,
+    achievedRoundSweep:false
+  },
+  lastAlmostThere:null
 };
 
 /* ================= UTIL ================= */
@@ -1526,7 +2073,14 @@ function nextComposite(){
 
 function checkRoundEnd(){
   if (state.phase !== 'PLAYING') return;
-  if (remainingTotal() === 0){ beginRoundEnd(); return; }
+  if (remainingTotal() === 0){
+    // Only a full factorization (not a pass-forced end or a deadlock) counts toward "round sweep".
+    if (state.mode === 'single' && state.runStats.roundCpuCards === 0 && state.runStats.roundPlayerCards > 0){
+      state.runStats.achievedRoundSweep = true;
+    }
+    beginRoundEnd();
+    return;
+  }
   if (hasPendingRefill()) return;
   if (!hasLegalMove('p1') && !hasLegalMove('p2')){ beginRoundEnd(); return; }
 }
@@ -1574,6 +2128,8 @@ function proceedToNextRound(){
   state.roundUsed = {p1:[],p2:[]};
   state.lastPlayed = {};
   state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
+  state.runStats.roundPlayerCards = 0;
+  state.runStats.roundCpuCards = 0;
   nextComposite();
   state.compositeHidden = true;
   state.phase = 'PLAYING';
@@ -1605,6 +2161,71 @@ function refillHandSlot(playerId, index){
   if (state.phase === 'PLAYING') checkRoundEnd();
 }
 
+function commitMatchResult(winnerId){
+  if (state.resultCommitted) return;
+  state.resultCommitted = true;
+
+  const stats = state.achievements.stats;
+  stats.matchesPlayed++;
+
+  if (state.mode === 'local2p'){
+    stats.twoPlayerGames++;
+  } else if (state.mode === 'single'){
+    const rank = cpuRankNumber(state.cpuLevel);
+    const rs = state.runStats;
+    const playerWon = winnerId === 'p1';
+
+    if (playerWon){
+      const key = state.cpuLevel === 'MAX' ? 'max' : ('lv' + state.cpuLevel);
+      stats.cpuWins[key] = (stats.cpuWins[key]||0) + 1;
+
+      if (rs.playerMistakes === 0) stats.bestNoMissCpuRank = Math.max(stats.bestNoMissCpuRank, rank);
+      if (rs.playerMistakes > 0) stats.bestMistakesInCpuWin = Math.max(stats.bestMistakesInCpuWin, rs.playerMistakes);
+      if (rs.achievedRoundSweep) stats.bestSweepCpuRank = Math.max(stats.bestSweepCpuRank, rank);
+      stats.bestComebackLead = Math.max(stats.bestComebackLead, rs.maxCpuLead);
+
+      const margin = rs.playerCardsPlayed - rs.cpuCardsPlayed;
+      if (margin <= 1) stats.closeWinCount++;
+      if (margin >= 4) stats.bestWinMargin = Math.max(stats.bestWinMargin, margin);
+
+      stats.currentCpuWinStreak++;
+      stats.bestCpuWinStreak = Math.max(stats.bestCpuWinStreak, stats.currentCpuWinStreak);
+      if (rank >= 4){
+        stats.currentStreakLv4Plus++;
+        stats.bestStreakLv4Plus = Math.max(stats.bestStreakLv4Plus, stats.currentStreakLv4Plus);
+      } else stats.currentStreakLv4Plus = 0;
+      if (rank >= 5){
+        stats.currentStreakLv5Plus++;
+        stats.bestStreakLv5Plus = Math.max(stats.bestStreakLv5Plus, stats.currentStreakLv5Plus);
+      } else stats.currentStreakLv5Plus = 0;
+      if (rank >= 6){
+        stats.currentStreakMax++;
+        stats.bestStreakMax = Math.max(stats.bestStreakMax, stats.currentStreakMax);
+      } else stats.currentStreakMax = 0;
+
+      const hasLow = state.selectedLevels.includes(1) || state.selectedLevels.includes(2);
+      const hasHigh = state.selectedLevels.includes(3) || state.selectedLevels.includes(4);
+      if (hasHigh && !hasLow) stats.highQuestionWins++;
+      if (state.selectedLevels.length === 1 && state.selectedLevels[0] === 4){
+        stats.bestProOnlyCpuRank = Math.max(stats.bestProOnlyCpuRank, rank);
+      }
+    } else {
+      stats.currentCpuWinStreak = 0;
+      stats.currentStreakLv4Plus = 0;
+      stats.currentStreakLv5Plus = 0;
+      stats.currentStreakMax = 0;
+    }
+
+    stats.passCount += rs.playerPasses;
+    stats.bestCorrectStreak = Math.max(stats.bestCorrectStreak, rs.maxCorrectStreak);
+  }
+
+  saveAchievementData();
+  state.achievementUnlockQueue = evaluateAchievements();
+  state.achievementUnlockIndex = 0;
+  saveAchievementData();
+}
+
 function endGame(winnerId){
   if (state.phase === 'GAME_OVER') return;
   state.phase = 'GAME_OVER';
@@ -1613,6 +2234,7 @@ function endGame(winnerId){
   clearCPUTimer();
   clearTenCountTimer();
   document.getElementById('round-overlay').classList.add('hidden');
+  commitMatchResult(winnerId);
   if (state.mode === 'single'){
     playSound(winnerId === 'p1' ? 'win' : 'lose');
   } else {
@@ -1647,6 +2269,9 @@ function declareTenCount(playerId){
   player.locked = true;
   player.lockReason = 'declared';
   player.declared = true;
+  if (playerId === 'p1' && state.mode === 'single'){
+    state.runStats.playerPasses++;
+  }
   playSound('declare');
   checkRoundEnd();
   if (state.phase !== 'PLAYING'){
@@ -1781,6 +2406,19 @@ function playCard(playerId, index){
     state.roundUsed[playerId].push(prime);
     state.lastPlayed[prime] = { time: Date.now(), playerId };
     if (playerId === 'p1') state.playerSuccessfulPlays++; else state.cpuSuccessfulPlays++;
+    if (state.mode === 'single'){
+      const rs = state.runStats;
+      if (playerId === 'p1'){
+        rs.playerCardsPlayed++;
+        rs.roundPlayerCards++;
+        rs.currentCorrectStreak++;
+        rs.maxCorrectStreak = Math.max(rs.maxCorrectStreak, rs.currentCorrectStreak);
+      } else {
+        rs.cpuCardsPlayed++;
+        rs.roundCpuCards++;
+      }
+      rs.maxCpuLead = Math.max(rs.maxCpuLead, rs.cpuCardsPlayed - rs.playerCardsPlayed);
+    }
     player.hand[index] = null;
     render();
     if (state.phase === 'PLAYING') checkRoundEnd();
@@ -1802,6 +2440,10 @@ function playCard(playerId, index){
   playSound('incorrect');
   player.locked = true;
   player.lockReason = 'mistake';
+  if (playerId === 'p1' && state.mode === 'single'){
+    state.runStats.playerMistakes++;
+    state.runStats.currentCorrectStreak = 0;
+  }
   showMistakeFlash(playerId);
   checkRoundEnd();
   render();
@@ -1918,6 +2560,9 @@ function resetTimeAttackRun(){
   clearTimeAttackTimerLoop();
   clearTimeAttackFeedbackTimer();
   clearTimeAttackHintToastTimer();
+  clearAchievementUnlockTimers();
+  state.achievementUnlockQueue = [];
+  state.achievementUnlockIndex = 0;
   state.timeAttack = {
     status:'idle',
     questions:[],
@@ -2106,6 +2751,15 @@ function finishTimeAttack(){
     state.timeAttackBest[level] = ta.finalTimeMs;
     saveTimeAttackBest();
   }
+
+  const stats = state.achievements.stats;
+  if (ta.hintCount === 0) stats.bestNoHintLevel = Math.max(stats.bestNoHintLevel, level);
+  if (ta.mistakeCount === 0) stats.bestNoMissTimeAttackLevel = Math.max(stats.bestNoMissTimeAttackLevel, level);
+  saveAchievementData();
+  state.achievementUnlockQueue = evaluateAchievements();
+  state.achievementUnlockIndex = 0;
+  saveAchievementData();
+
   showTimeAttackClearScreen(isNewBest);
 }
 function gameOverTimeAttack(){
@@ -2132,7 +2786,11 @@ function showTimeAttackClearScreen(isNewBest){
     ? `ヒント使用 ${ta.hintCount}回（+${hintPenalty}秒）`
     : 'ヒント使用なし！';
   renderTimeAttackHistory('ta-clear-history-list');
+  document.getElementById('ta-clear-almost-there').classList.add('hidden');
   document.getElementById('ta-clear-overlay').classList.remove('hidden');
+  updateAchievementMenuBadge();
+  const taContext = 'ta_' + state.timeAttackLevel;
+  scheduleAchievementUnlockSequence(()=> renderAlmostThere(taContext, 'ta-clear-almost-there', 'ta-clear-almost-there-text'));
 }
 function showTimeAttackGameOverScreen(){
   const ta = state.timeAttack;
@@ -2140,6 +2798,7 @@ function showTimeAttackGameOverScreen(){
   document.getElementById('ta-gameover-score').textContent = `正解 ${ta.correctCount} / 10`;
   document.getElementById('ta-gameover-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
   renderTimeAttackHistory('ta-gameover-history-list');
+  renderAlmostThere('ta_' + state.timeAttackLevel, 'ta-gameover-almost-there', 'ta-gameover-almost-there-text');
   document.getElementById('ta-gameover-overlay').classList.remove('hidden');
 }
 
@@ -2355,6 +3014,7 @@ function showScreen(name){
   document.getElementById('help-menu-screen').classList.toggle('hidden', name !== 'helpMenu');
   document.getElementById('help-screen').classList.toggle('hidden', name !== 'help');
   document.getElementById('help-multiples-screen').classList.toggle('hidden', name !== 'helpMultiples');
+  document.getElementById('achievements-screen').classList.toggle('hidden', name !== 'achievements');
   document.getElementById('game-screen').classList.toggle('hidden', name !== 'game');
   document.getElementById('timeattack-screen').classList.toggle('hidden', name !== 'timeattack');
 }
@@ -2497,6 +3157,17 @@ function startGame(){
   state.tenCount = {active:false,remaining:10,declarer:null,intervalId:null};
   state.playerSuccessfulPlays = 0;
   state.cpuSuccessfulPlays = 0;
+  state.resultCommitted = false;
+  state.runStats = {
+    playerMistakes:0, playerPasses:0,
+    currentCorrectStreak:0, maxCorrectStreak:0,
+    playerCardsPlayed:0, cpuCardsPlayed:0,
+    maxCpuLead:0, roundPlayerCards:0, roundCpuCards:0,
+    achievedRoundSweep:false
+  };
+  clearAchievementUnlockTimers();
+  state.achievementUnlockQueue = [];
+  state.achievementUnlockIndex = 0;
   clearCPUTimer();
   clearTenCountTimer();
   clearCharacterIntroTimer();
@@ -2558,7 +3229,11 @@ function showResultScreen(winnerId){
   const canAdvance = state.mode === 'single' && winnerId === 'p1' && NEXT_CPU_LEVEL[state.cpuLevel] !== undefined;
   document.getElementById('next-opponent-btn').classList.toggle('hidden', !canAdvance);
 
+  document.getElementById('result-almost-there').classList.add('hidden');
   document.getElementById('result-overlay').classList.remove('hidden');
+  updateAchievementMenuBadge();
+  const almostThereContext = state.mode === 'single' ? 'cpu' : 'local2p';
+  scheduleAchievementUnlockSequence(()=> renderAlmostThere(almostThereContext, 'result-almost-there', 'result-almost-there-text'));
 }
 
 function fightNextOpponent(){
@@ -2578,6 +3253,12 @@ function goToTitle(){
   clearCharacterIntroTimer();
   clearTimeAttackTimerLoop();
   clearTimeAttackFeedbackTimer();
+  clearAchievementUnlockTimers();
+  achievementUnlockOnComplete = null;
+  state.achievementUnlockQueue = [];
+  state.achievementUnlockIndex = 0;
+  document.getElementById('achievement-unlock-overlay').classList.add('hidden');
+  document.getElementById('unlock-particles').innerHTML = '';
   state.phase = 'TITLE';
   document.getElementById('result-overlay').classList.add('hidden');
   document.getElementById('round-overlay').classList.add('hidden');
@@ -2676,6 +3357,317 @@ function updateTitleBestDisplay(){
   el.textContent = (best != null) ? ('ベストタイム：' + formatTime(best)) : 'ベストタイム：記録なし';
 }
 
+/* ================= ACHIEVEMENTS: UI ================= */
+function updateAchievementMenuBadge(){
+  const count = Object.values(state.achievements.unlocked).filter(e=>e.isNew).length;
+  const badge = document.getElementById('help-menu-achievement-badge');
+  if (count > 0){
+    badge.textContent = count > 99 ? '99+' : String(count);
+    badge.setAttribute('aria-label', `未確認の新しく獲得した称号 ${count}件`);
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function renderAchievementTabs(){
+  const cats = ['all','cpu','technique','levels','timeattack'];
+  document.getElementById('achievements-tabs').innerHTML = cats.map(c=>
+    `<button type="button" class="achievements-tab-btn ${state.achievementFilter===c?'selected':''}" data-filter="${c}">${ACHIEVEMENT_CATEGORY_LABELS[c]}</button>`
+  ).join('');
+  document.querySelectorAll('.achievements-tab-btn').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      state.achievementFilter = btn.dataset.filter;
+      renderAchievementTabs();
+      renderAchievementsScreen();
+    });
+  });
+}
+
+function renderAchievementsScreen(){
+  const stats = state.achievements.stats;
+  const unlocked = state.achievements.unlocked;
+  const totalUnlocked = Object.keys(unlocked).length;
+  const pct = ACHIEVEMENT_TOTAL_COUNT > 0 ? Math.round((totalUnlocked / ACHIEVEMENT_TOTAL_COUNT) * 100) : 0;
+  document.getElementById('achievements-summary').innerHTML =
+    `<div class="big">獲得 ${totalUnlocked} / ${ACHIEVEMENT_TOTAL_COUNT}</div><div>コンプリート率 ${pct}％</div>`;
+
+  const filter = state.achievementFilter;
+  const seriesList = ACHIEVEMENT_SERIES.filter(s=> s.available !== false && (filter === 'all' || s.category === filter));
+
+  const listHtml = seriesList.map(series=>{
+    const allDone = series.tiers.every(t=> unlocked[`${series.id}_${t.rank}`]);
+    const tiersHtml = series.tiers.map(tier=>{
+      const id = `${series.id}_${tier.rank}`;
+      const entry = unlocked[id];
+      const isUnlocked = !!entry;
+      const newBadge = (isUnlocked && entry.isNew) ? '<span class="achievement-tier-new" aria-label="新しく獲得">NEW</span>' : '';
+      let statusText;
+      if (isUnlocked){
+        statusText = '獲得済み';
+      } else if (series.progressType === 'time'){
+        const val = getAchievementDisplayValue(series, tier, stats);
+        statusText = val == null ? 'BEST --:--.--' : `BEST ${formatTime(val)}`;
+      } else {
+        const val = getAchievementDisplayValue(series, tier, stats) || 0;
+        statusText = `${Math.min(val, tier.target)} / ${tier.target}`;
+      }
+      return `<div class="achievement-tier-row ${isUnlocked?'':'locked'}">
+        <span class="achievement-tier-icon" aria-hidden="true">${tier.icon}</span>
+        <span class="achievement-tier-name">${tier.title}${isUnlocked?'':`（${tier.conditionText}）`}</span>
+        <span class="achievement-tier-status">${statusText}</span>${newBadge}
+      </div>`;
+    }).join('');
+
+    let footer = '';
+    if (allDone){
+      footer = `<div class="achievement-next-target">COMPLETE!</div>`;
+    } else {
+      const nextTier = getNextTier(series, unlocked);
+      const pctNext = getAchievementProgressPercent(series, nextTier, stats);
+      footer = `
+        <div class="achievement-next-target">次の目標：${nextTier.conditionText}</div>
+        <div class="achievement-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pctNext}">
+          <div class="achievement-progress-fill" style="width:${pctNext}%;"></div>
+        </div>
+        <div class="achievement-progress-label">${pctNext}％</div>
+      `;
+    }
+
+    return `<div class="achievement-card ${allDone?'complete':''}">
+      <div class="achievement-card-header">
+        <div class="achievement-card-title">${series.label}</div>
+        ${allDone?'<span class="achievement-complete-badge">COMPLETE!</span>':''}
+      </div>
+      ${tiersHtml}
+      ${footer}
+    </div>`;
+  }).join('');
+
+  document.getElementById('achievements-list').innerHTML = listHtml ||
+    '<div style="text-align:center;color:var(--sub);">該当するアチーブメントはありません</div>';
+}
+
+function openAchievementsScreen(){
+  renderAchievementTabs();
+  renderAchievementsScreen();
+  showScreen('achievements');
+}
+function closeAchievementsScreen(){
+  let changed = false;
+  Object.values(state.achievements.unlocked).forEach(entry=>{
+    if (entry.isNew){ entry.isNew = false; changed = true; }
+  });
+  if (changed) saveAchievementData();
+  updateAchievementMenuBadge();
+  showScreen('helpMenu');
+}
+
+/* ---- Unlock overlay sequencing ---- */
+let achievementUnlockOnComplete = null;
+
+function clearAchievementUnlockTimers(){
+  if (state.achievementUnlockTimerId){ clearTimeout(state.achievementUnlockTimerId); state.achievementUnlockTimerId = null; }
+  if (state.achievementRevealDelayTimerId){ clearTimeout(state.achievementRevealDelayTimerId); state.achievementRevealDelayTimerId = null; }
+}
+
+function scheduleAchievementUnlockSequence(onComplete){
+  clearAchievementUnlockTimers();
+  achievementUnlockOnComplete = onComplete || null;
+  if (!state.achievementUnlockQueue || state.achievementUnlockQueue.length === 0){
+    if (achievementUnlockOnComplete){ const cb = achievementUnlockOnComplete; achievementUnlockOnComplete = null; cb(); }
+    return;
+  }
+  state.achievementRevealDelayTimerId = setTimeout(()=>{
+    state.achievementUnlockIndex = 0;
+    showAchievementUnlockStep();
+  }, 650);
+}
+
+function showAchievementUnlockStep(){
+  const queue = state.achievementUnlockQueue;
+  const idx = state.achievementUnlockIndex;
+  if (idx >= queue.length){
+    finishAchievementUnlockSequence();
+    return;
+  }
+  const { series, tier } = queue[idx];
+  const overlay = document.getElementById('achievement-unlock-overlay');
+  const content = document.getElementById('achievement-unlock-content');
+  document.getElementById('achievement-unlock-summary').classList.add('hidden');
+  content.classList.remove('hidden');
+
+  content.className = 'achievement-unlock-content rank-' + tier.rank;
+  document.getElementById('unlock-medal').textContent = tier.icon;
+  document.getElementById('unlock-title').textContent = `${tier.icon} ${tier.title}`;
+  document.getElementById('unlock-condition').textContent = tier.conditionText;
+  document.getElementById('unlock-counter').textContent = `${idx+1} / ${queue.length}`;
+
+  const rankIndex = {bronze:0,silver:1,gold:2}[tier.rank];
+  const rankUpEl = document.getElementById('unlock-rankup');
+  if (rankIndex > 0){
+    const prevRank = series.tiers[rankIndex-1].rank;
+    const prevAlsoFresh = queue.some(item => item.series.id === series.id && item.tier.rank === prevRank);
+    if (!prevAlsoFresh){
+      document.getElementById('unlock-rankup-icons').textContent = `${series.tiers[rankIndex-1].icon} → ${tier.icon}`;
+      rankUpEl.classList.remove('hidden');
+    } else {
+      rankUpEl.classList.add('hidden');
+    }
+  } else {
+    rankUpEl.classList.add('hidden');
+  }
+
+  document.getElementById('unlock-summary-btn').classList.toggle('hidden', queue.length < 4);
+  document.getElementById('unlock-next-btn').textContent = (idx === queue.length - 1) ? 'OK' : '次へ';
+
+  playAchievementUnlockEffect(tier.rank);
+  overlay.classList.remove('hidden');
+}
+
+function advanceAchievementUnlock(){
+  state.achievementUnlockIndex++;
+  showAchievementUnlockStep();
+}
+
+function showAchievementUnlockSummary(){
+  const queue = state.achievementUnlockQueue;
+  document.getElementById('unlock-summary-list').innerHTML = queue.map(({tier})=>
+    `<div class="unlock-summary-item"><span class="icon" aria-hidden="true">${tier.icon}</span><span>${tier.title}</span></div>`
+  ).join('');
+  document.getElementById('achievement-unlock-content').classList.add('hidden');
+  document.getElementById('achievement-unlock-summary').classList.remove('hidden');
+}
+
+function finishAchievementUnlockSequence(){
+  clearAchievementUnlockTimers();
+  document.getElementById('achievement-unlock-overlay').classList.add('hidden');
+  document.getElementById('unlock-particles').innerHTML = '';
+  state.achievementUnlockQueue = [];
+  state.achievementUnlockIndex = 0;
+  const cb = achievementUnlockOnComplete;
+  achievementUnlockOnComplete = null;
+  if (cb) cb();
+}
+
+function playAchievementUnlockEffect(rank){
+  spawnConfetti(rank);
+  if (!state.soundOn) return;
+  ensureAudio();
+  if (rank === 'bronze'){
+    beep(440,0.12,'sine',0.15,0);
+    beep(587.33,0.14,'sine',0.15,0.1);
+  } else if (rank === 'silver'){
+    beep(523.25,0.1,'sine',0.16,0);
+    beep(659.25,0.12,'sine',0.16,0.09);
+    beep(880,0.16,'sine',0.16,0.18);
+  } else {
+    beep(523.25,0.1,'sine',0.17,0);
+    beep(659.25,0.1,'sine',0.17,0.08);
+    beep(783.99,0.1,'sine',0.17,0.16);
+    beep(1046.5,0.14,'sine',0.17,0.24);
+    beep(1318.51,0.22,'sine',0.15,0.36);
+  }
+}
+
+function spawnConfetti(rank){
+  const container = document.getElementById('unlock-particles');
+  container.innerHTML = '';
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+  const counts = { bronze:8, silver:16, gold:28 };
+  const colors = {
+    bronze:['#cd7f32','#e0a458','#8d5524'],
+    silver:['#e0e0e0','#ffffff','#b0c4de'],
+    gold:['#ffd700','#ffec8b','#ffa500']
+  };
+  const n = counts[rank] || 10;
+  const palette = colors[rank] || colors.bronze;
+  for (let i=0;i<n;i++){
+    const p = document.createElement('span');
+    p.className = 'unlock-particle';
+    p.style.left = (40 + Math.random()*20) + '%';
+    p.style.background = palette[Math.floor(Math.random()*palette.length)];
+    p.style.setProperty('--dx', (Math.random()*200-100)+'px');
+    p.style.setProperty('--dy', (120+Math.random()*140)+'px');
+    p.style.setProperty('--rot', (Math.random()*360)+'deg');
+    p.style.animationDelay = (Math.random()*0.15) + 's';
+    container.appendChild(p);
+  }
+  setTimeout(()=>{ container.innerHTML = ''; }, 1600);
+}
+
+/* ---- あと少し (almost there) ---- */
+function getAlmostThereCandidateIds(context){
+  const cpuIds = ['matches_played','cpu_lv1_wins','cpu_lv2_wins','cpu_lv3_wins','cpu_lv4_wins','cpu_lv5_wins','cpu_max_wins',
+    'no_miss_cpu_win','mistake_comeback_win','pass_count','correct_streak','round_sweep','cpu_win_streak',
+    'high_cpu_three_streak','comeback_lead','close_win_count','big_margin_win','high_question_wins','pro_only_cpu_win'];
+  const twoPIds = ['matches_played','two_player_games'];
+  const taIds = { beginner:['ta_beginner_time','ta_no_hint','ta_no_miss'], intermediate:['ta_intermediate_time','ta_no_hint','ta_no_miss'],
+    advanced:['ta_advanced_time','ta_no_hint','ta_no_miss'], pro:['ta_pro_time','ta_no_hint','ta_no_miss'] };
+  if (context === 'cpu') return cpuIds;
+  if (context === 'local2p') return twoPIds;
+  if (context.startsWith('ta_')){
+    const map = {ta_1:'beginner',ta_2:'intermediate',ta_3:'advanced',ta_4:'pro'};
+    return taIds[map[context]] || [];
+  }
+  return [];
+}
+
+function computeAlmostThere(context){
+  const stats = state.achievements.stats;
+  const unlocked = state.achievements.unlocked;
+  const ids = getAlmostThereCandidateIds(context);
+  const candidates = ids
+    .map(id => ACHIEVEMENT_SERIES.find(s=>s.id===id))
+    .filter(Boolean)
+    .filter(s => s.available !== false);
+
+  const freshIds = new Set((state.achievementUnlockQueue||[]).map(item=>item.id));
+  let best = null;
+  candidates.forEach(series=>{
+    const tier = getNextTier(series, unlocked);
+    if (!tier) return; // series fully complete
+    const pct = getAchievementProgressPercent(series, tier, stats);
+    const id = `${series.id}_${tier.rank}`;
+    const isFreshSeries = series.tiers.some(t => freshIds.has(`${series.id}_${t.rank}`));
+    const rankPriority = {gold:2,silver:1,bronze:0}[tier.rank];
+    const candidate = { series, tier, pct, isFreshSeries, rankPriority };
+    if (!best) { best = candidate; return; }
+    if (candidate.isFreshSeries !== best.isFreshSeries){
+      if (candidate.isFreshSeries) best = candidate;
+      return;
+    }
+    if (candidate.pct !== best.pct){
+      if (candidate.pct > best.pct) best = candidate;
+      return;
+    }
+    if (candidate.rankPriority > best.rankPriority) best = candidate;
+  });
+
+  if (!best){
+    return candidates.length > 0 ? { complete:true } : null;
+  }
+  return { series:best.series, tier:best.tier, text:getRemainingText(best.series, best.tier, stats) };
+}
+
+function renderAlmostThere(context, blockId, textId){
+  const block = document.getElementById(blockId);
+  const result = computeAlmostThere(context);
+  if (!result){
+    block.classList.add('hidden');
+    return;
+  }
+  block.classList.remove('hidden');
+  const textEl = document.getElementById(textId);
+  if (result.complete){
+    textEl.textContent = '🏆 このモードのアチーブメントをコンプリート！';
+  } else {
+    textEl.textContent = `${result.tier.icon} ${result.tier.title}まで、${result.text}`;
+  }
+}
+
 let lastTouchEndTime = 0;
 document.addEventListener('touchend', (e)=>{
   const now = Date.now();
@@ -2687,6 +3679,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   initTitleBackground();
   loadSettings();
   state.timeAttackBest = loadTimeAttackBest();
+  state.achievements = loadAchievementData();
+  updateAchievementMenuBadge();
   renderLevelToggleButtons();
   updateLevelWarning();
   updateCpuFieldsetVisibility();
@@ -2746,6 +3740,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('help-menu-multiples-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     showScreen('helpMultiples');
+  });
+  document.getElementById('help-menu-achievement-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    openAchievementsScreen();
+  });
+  document.getElementById('achievements-back-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    closeAchievementsScreen();
+  });
+  document.getElementById('unlock-next-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    advanceAchievementUnlock();
+  });
+  document.getElementById('unlock-summary-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showAchievementUnlockSummary();
+  });
+  document.getElementById('unlock-summary-ok-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    finishAchievementUnlockSequence();
   });
   document.getElementById('help-menu-title-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
