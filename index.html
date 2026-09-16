@@ -108,6 +108,18 @@ button,input,select{font-family:inherit;}
   display:flex;align-items:center;justify-content:center;
   padding:0;
 }
+.help-top-back-btn{
+  position:fixed;
+  top:calc(env(safe-area-inset-top) + 14px);
+  right:16px;
+  z-index:50;
+  padding:8px 16px;
+  border-radius:20px;
+  border:1px solid #3a4258;
+  background:rgba(28,33,48,0.85);
+  color:var(--text);
+  font-size:13px;font-weight:700;
+}
 fieldset{
   width:100%;max-width:420px;
   border:1px solid #2c3244;
@@ -957,6 +969,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 </div>
 
 <div id="help-screen" class="screen hidden">
+  <button type="button" id="help-topback-btn" class="help-top-back-btn">もどる</button>
   <div class="help-content">
     <h2 class="help-title">遊び方</h2>
 
@@ -1021,6 +1034,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 </div>
 
 <div id="help-multiples-screen" class="screen hidden">
+  <button type="button" id="help-multiples-topback-btn" class="help-top-back-btn">もどる</button>
   <div class="help-content">
     <h2 class="help-title">倍数の見分け方</h2>
     <p class="multiples-intro">合成数が「2・3・5・7・11」のどれで割り切れるか、数字の特徴から見分けよう！</p>
@@ -1105,6 +1119,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 </div>
 
 <div id="achievements-screen" class="screen hidden">
+  <button type="button" id="achievements-topback-btn" class="help-top-back-btn">もどる</button>
   <div class="help-content" style="max-width:520px;">
     <h2 class="help-title">アチーブメント</h2>
     <div id="achievements-summary" class="achievements-summary"></div>
@@ -3769,9 +3784,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
     e.preventDefault();
     showScreen('helpMenu');
   });
+  document.getElementById('help-topback-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('helpMenu');
+  });
   document.getElementById('help-multiples-back-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     showScreen('helpMenu');
+  });
+  document.getElementById('help-multiples-topback-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('helpMenu');
+  });
+  document.getElementById('achievements-topback-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    closeAchievementsScreen();
   });
 
   document.getElementById('start-btn').addEventListener('pointerdown', (e)=>{
