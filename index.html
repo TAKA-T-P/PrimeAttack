@@ -829,15 +829,6 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .achievement-progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 0.3s ease;}
 .achievement-progress-label{font-size:11px;color:var(--sub);text-align:right;margin-top:2px;}
 
-/* ---------- あと少し (almost there) ---------- */
-.almost-there-block{
-  text-align:center;background:rgba(255,255,255,0.06);border:1px solid #2c3244;
-  border-radius:12px;padding:10px 14px;
-}
-.almost-there-block.hidden{display:none !important;}
-.almost-there-title{font-size:12px;color:var(--sub);margin-bottom:4px;}
-.almost-there-text{font-size:14px;font-weight:700;color:#fff;overflow-wrap:break-word;}
-
 /* ---------- Achievement unlock overlay ---------- */
 #achievement-unlock-overlay{
   position:fixed;inset:0;z-index:700;
@@ -1210,10 +1201,6 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
         <button id="retry-btn" class="result-btn">もう一度</button>
         <button id="title-btn" class="result-btn">タイトルへ</button>
       </div>
-      <div id="result-almost-there" class="almost-there-block hidden">
-        <div class="almost-there-title">🎯 あと少し！</div>
-        <div id="result-almost-there-text" class="almost-there-text"></div>
-      </div>
     </div>
   </div>
   <div id="pause-overlay" class="overlay hidden">
@@ -1222,6 +1209,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <button id="pause-yes" class="result-btn">はい</button>
       <button id="pause-no" class="result-btn">いいえ</button>
     </div>
+    <button id="pause-retry" class="result-btn">リトライ</button>
   </div>
 </div>
 
@@ -1271,10 +1259,6 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
         <button id="ta-clear-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-clear-title-btn" class="result-btn">タイトルへ</button>
       </div>
-      <div id="ta-clear-almost-there" class="almost-there-block hidden">
-        <div class="almost-there-title">🎯 あと少し！</div>
-        <div id="ta-clear-almost-there-text" class="almost-there-text"></div>
-      </div>
       <div class="ta-history">
         <div class="ta-history-title">問題履歴</div>
         <div id="ta-clear-history-list" class="ta-history-list"></div>
@@ -1291,10 +1275,6 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <div class="result-btn-row">
         <button id="ta-gameover-retry-btn" class="result-btn">もう一度</button>
         <button id="ta-gameover-title-btn" class="result-btn">タイトルへ</button>
-      </div>
-      <div id="ta-gameover-almost-there" class="almost-there-block hidden">
-        <div class="almost-there-title">🎯 あと少し！</div>
-        <div id="ta-gameover-almost-there-text" class="almost-there-text"></div>
       </div>
       <div class="ta-history">
         <div class="ta-history-title">問題履歴</div>
@@ -1796,22 +1776,6 @@ function getAchievementProgressPercent(series, tier, stats){
   }
   return Math.min(100, Math.max(0, Math.round(((val||0) / tier.target) * 100)));
 }
-function getRemainingText(series, tier, stats){
-  const val = getAchievementDisplayValue(series, tier, stats);
-  if (series.progressType === 'time'){
-    if (val == null) return `目標：${tier.conditionText}`;
-    const diffMs = val - tier.target;
-    if (diffMs <= 0) return '達成！';
-    return `あと${(diffMs/1000).toFixed(2)}秒短縮！`;
-  }
-  const diff = Math.max(0, tier.target - (val||0));
-  if (diff <= 0) return '達成！';
-  if (series.progressType === 'level') return `次は${tier.conditionText}で達成！`;
-  if (series.progressType === 'streak') return `あと${diff}連勝！`;
-  const unit = tier.unit || series.unit || '';
-  return `あと${diff}${unit}！`;
-}
-
 /* ================= STATE ================= */
 let state = {
   mode:'single',
@@ -1888,8 +1852,7 @@ let state = {
     roundPlayerCards:0,
     roundCpuCards:0,
     achievedRoundSweep:false
-  },
-  lastAlmostThere:null
+  }
 };
 
 /* ================= UTIL ================= */
@@ -2801,11 +2764,9 @@ function showTimeAttackClearScreen(isNewBest){
     ? `ヒント使用 ${ta.hintCount}回（+${hintPenalty}秒）`
     : 'ヒント使用なし！';
   renderTimeAttackHistory('ta-clear-history-list');
-  document.getElementById('ta-clear-almost-there').classList.add('hidden');
   document.getElementById('ta-clear-overlay').classList.remove('hidden');
   updateAchievementMenuBadge();
-  const taContext = 'ta_' + state.timeAttackLevel;
-  scheduleAchievementUnlockSequence(()=> renderAlmostThere(taContext, 'ta-clear-almost-there', 'ta-clear-almost-there-text'));
+  scheduleAchievementUnlockSequence();
 }
 function showTimeAttackGameOverScreen(){
   const ta = state.timeAttack;
@@ -2813,7 +2774,6 @@ function showTimeAttackGameOverScreen(){
   document.getElementById('ta-gameover-score').textContent = `正解 ${ta.correctCount} / 10`;
   document.getElementById('ta-gameover-time').textContent = 'TIME ' + formatTime(ta.finalTimeMs);
   renderTimeAttackHistory('ta-gameover-history-list');
-  renderAlmostThere('ta_' + state.timeAttackLevel, 'ta-gameover-almost-there', 'ta-gameover-almost-there-text');
   document.getElementById('ta-gameover-overlay').classList.remove('hidden');
 }
 
@@ -3148,7 +3108,7 @@ function loadSettings(){
   }catch(e){}
 }
 
-function startGame(){
+function startGame(skipIntro){
   syncSettingsFromUI();
   saveSettings();
 
@@ -3208,7 +3168,7 @@ function startGame(){
     });
   };
 
-  if (state.mode === 'single'){
+  if (state.mode === 'single' && !skipIntro){
     showCharacterIntro(proceedToCountdown);
   } else {
     proceedToCountdown();
@@ -3244,11 +3204,9 @@ function showResultScreen(winnerId){
   const canAdvance = state.mode === 'single' && winnerId === 'p1' && NEXT_CPU_LEVEL[state.cpuLevel] !== undefined;
   document.getElementById('next-opponent-btn').classList.toggle('hidden', !canAdvance);
 
-  document.getElementById('result-almost-there').classList.add('hidden');
   document.getElementById('result-overlay').classList.remove('hidden');
   updateAchievementMenuBadge();
-  const almostThereContext = state.mode === 'single' ? 'cpu' : 'local2p';
-  scheduleAchievementUnlockSequence(()=> renderAlmostThere(almostThereContext, 'result-almost-there', 'result-almost-there-text'));
+  scheduleAchievementUnlockSequence();
 }
 
 function fightNextOpponent(){
@@ -3305,6 +3263,12 @@ function confirmPauseToTitle(){
   clearTenCountTimer();
   document.getElementById('pause-overlay').classList.add('hidden');
   goToTitle();
+}
+function retryFromPause(){
+  clearCPUTimer();
+  clearTenCountTimer();
+  document.getElementById('pause-overlay').classList.add('hidden');
+  startGame(true);
 }
 
 /* ================= INIT ================= */
@@ -3613,76 +3577,6 @@ function spawnConfetti(rank){
   setTimeout(()=>{ container.innerHTML = ''; }, 1600);
 }
 
-/* ---- あと少し (almost there) ---- */
-function getAlmostThereCandidateIds(context){
-  const cpuIds = ['matches_played','cpu_lv1_wins','cpu_lv2_wins','cpu_lv3_wins','cpu_lv4_wins','cpu_lv5_wins','cpu_max_wins',
-    'no_miss_cpu_win','mistake_comeback_win','pass_count','correct_streak','round_sweep','cpu_win_streak',
-    'high_cpu_three_streak','comeback_lead','close_win_count','big_margin_win','high_question_wins','pro_only_cpu_win'];
-  const twoPIds = ['matches_played','two_player_games'];
-  const taIds = { beginner:['ta_beginner_time','ta_no_hint','ta_no_miss'], intermediate:['ta_intermediate_time','ta_no_hint','ta_no_miss'],
-    advanced:['ta_advanced_time','ta_no_hint','ta_no_miss'], pro:['ta_pro_time','ta_no_hint','ta_no_miss'] };
-  if (context === 'cpu') return cpuIds;
-  if (context === 'local2p') return twoPIds;
-  if (context.startsWith('ta_')){
-    const map = {ta_1:'beginner',ta_2:'intermediate',ta_3:'advanced',ta_4:'pro'};
-    return taIds[map[context]] || [];
-  }
-  return [];
-}
-
-function computeAlmostThere(context){
-  const stats = state.achievements.stats;
-  const unlocked = state.achievements.unlocked;
-  const ids = getAlmostThereCandidateIds(context);
-  const candidates = ids
-    .map(id => ACHIEVEMENT_SERIES.find(s=>s.id===id))
-    .filter(Boolean)
-    .filter(s => s.available !== false);
-
-  const freshIds = new Set((state.achievementUnlockQueue||[]).map(item=>item.id));
-  let best = null;
-  candidates.forEach(series=>{
-    const tier = getNextTier(series, unlocked);
-    if (!tier) return; // series fully complete
-    const pct = getAchievementProgressPercent(series, tier, stats);
-    const id = `${series.id}_${tier.rank}`;
-    const isFreshSeries = series.tiers.some(t => freshIds.has(`${series.id}_${t.rank}`));
-    const rankPriority = {gold:2,silver:1,bronze:0}[tier.rank];
-    const candidate = { series, tier, pct, isFreshSeries, rankPriority };
-    if (!best) { best = candidate; return; }
-    if (candidate.isFreshSeries !== best.isFreshSeries){
-      if (candidate.isFreshSeries) best = candidate;
-      return;
-    }
-    if (candidate.pct !== best.pct){
-      if (candidate.pct > best.pct) best = candidate;
-      return;
-    }
-    if (candidate.rankPriority > best.rankPriority) best = candidate;
-  });
-
-  if (!best){
-    return candidates.length > 0 ? { complete:true } : null;
-  }
-  return { series:best.series, tier:best.tier, text:getRemainingText(best.series, best.tier, stats) };
-}
-
-function renderAlmostThere(context, blockId, textId){
-  const block = document.getElementById(blockId);
-  const result = computeAlmostThere(context);
-  if (!result){
-    block.classList.add('hidden');
-    return;
-  }
-  block.classList.remove('hidden');
-  const textEl = document.getElementById(textId);
-  if (result.complete){
-    textEl.textContent = '🏆 このモードのアチーブメントをコンプリート！';
-  } else {
-    textEl.textContent = `${result.tier.icon} ${result.tier.title}まで、${result.text}`;
-  }
-}
-
 let lastTouchEndTime = 0;
 document.addEventListener('touchend', (e)=>{
   const now = Date.now();
@@ -3843,6 +3737,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('pause-no').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     resumeFromPause();
+  });
+  document.getElementById('pause-retry').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    ensureAudio();
+    retryFromPause();
   });
 
   document.getElementById('round-next-btn').addEventListener('pointerdown', (e)=>{
