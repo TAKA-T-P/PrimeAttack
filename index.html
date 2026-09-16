@@ -223,7 +223,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 }
 
 /* ---------- Help screen ---------- */
-#help-screen{
+#help-screen,#help-menu-screen,#help-multiples-screen{
   flex-direction:column;
   align-items:center;
   overflow-y:auto;
@@ -260,6 +260,66 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .help-card-row{
   display:flex;gap:8px;justify-content:center;max-width:240px;margin:6px auto 0;
 }
+
+/* ---------- Help menu ---------- */
+.help-menu-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  flex-wrap:wrap;row-gap:6px;
+  width:100%;
+  padding:16px 18px;border:1px solid #2c3244;border-radius:14px;
+  background:#12151f;color:var(--text);
+  font-size:16px;font-weight:700;text-align:left;
+  text-decoration:none;
+  box-shadow:0 3px 10px rgba(0,0,0,0.25);
+}
+.help-menu-btn:disabled{opacity:0.45;}
+.help-menu-btn>span:first-child{white-space:nowrap;}
+.help-menu-badge{
+  font-size:11px;font-weight:700;color:var(--sub);
+  background:rgba(255,255,255,0.08);
+  padding:4px 8px;border-radius:8px;white-space:nowrap;flex:0 0 auto;
+}
+.help-menu-arrow{color:var(--accent2);font-weight:800;font-size:18px;flex:0 0 auto;}
+
+/* ---------- 倍数の見分け方 ---------- */
+.multiples-intro{color:var(--sub);font-size:clamp(13px,3.6vw,15px);text-align:center;margin:0 0 4px;line-height:1.6;}
+.multiple-rule-card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid #2c3244;border-left:4px solid var(--accent2);
+  border-radius:14px;padding:16px 18px;
+}
+.multiple-rule-title{font-weight:800;color:#fff;font-size:clamp(16px,4.4vw,19px);margin:0 0 8px;}
+.multiple-rule-desc{margin:0 0 10px;color:var(--text);font-size:clamp(13px,3.6vw,15px);line-height:1.7;}
+.multiple-example{
+  background:rgba(0,0,0,0.25);border-radius:10px;padding:12px 14px;
+  margin:10px 0;font-size:clamp(13px,3.6vw,15px);color:var(--text);line-height:1.9;text-align:center;
+  overflow-wrap:break-word;
+}
+.multiple-digit-highlight{color:#ffee58;font-weight:800;font-size:1.2em;}
+.multiple-chip-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0;}
+.multiple-chip{
+  width:30px;height:30px;border-radius:50%;flex:0 0 auto;
+  background:#232a3c;color:var(--text);font-weight:700;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+}
+.multiple-sum-line{display:block;font-size:clamp(15px,4.2vw,18px);font-weight:700;color:#fff;margin:6px 0;}
+.multiple-conclusion{margin:10px 0 0;font-weight:800;color:#66bb6a;font-size:clamp(14px,3.8vw,16px);}
+.multiple-steps{margin:8px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;text-align:left;}
+.multiple-steps li{font-size:clamp(13px,3.6vw,15px);color:var(--text);line-height:1.6;}
+.multiple-steps .step-num{color:var(--accent2);font-weight:800;margin-right:4px;}
+.multiple-formula{
+  font-size:clamp(15px,4.2vw,18px);font-weight:800;color:#fff;
+  background:rgba(0,0,0,0.25);border-radius:10px;padding:8px;margin:10px 0 0;
+}
+.multiple-note{font-size:clamp(12px,3.2vw,13px);color:var(--sub);margin:10px 0 0;line-height:1.6;}
+.multiple-position{
+  display:flex;justify-content:center;gap:16px;margin:4px 0 12px;flex-wrap:wrap;
+}
+.multiple-position-digit{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.multiple-position-digit .digit{font-size:clamp(24px,7.5vw,32px);font-weight:800;line-height:1;}
+.multiple-position-digit .order{font-size:11px;color:var(--sub);}
+.multiple-position-odd{color:#42a5f5;}
+.multiple-position-even{color:#ffa726;}
 
 /* ---------- Game screen ---------- */
 #game-screen{
@@ -754,6 +814,23 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
   <p id="level-warning" class="warning hidden">出題レベルを1つ以上選択してください</p>
 </div>
 
+<div id="help-menu-screen" class="screen hidden">
+  <div class="help-content">
+    <h2 class="help-title">ヘルプ</h2>
+    <button type="button" id="help-menu-howto-btn" class="help-menu-btn">📖 あそびかた</button>
+    <button type="button" id="help-menu-multiples-btn" class="help-menu-btn">🔍 倍数の見分け方</button>
+    <button type="button" id="help-menu-achievement-btn" class="help-menu-btn" disabled aria-disabled="true">
+      <span>🏆 アチーブメント</span>
+      <span class="help-menu-badge">COMING SOON</span>
+    </button>
+    <a href="https://taka-t-p.github.io/math-app-portal/" target="_blank" rel="noopener noreferrer" id="help-menu-portal-link" class="help-menu-btn">
+      <span>🧪 KEC数学科ラボへ</span>
+      <span class="help-menu-arrow">↗</span>
+    </a>
+    <button type="button" id="help-menu-title-btn" class="start-btn" style="margin-top:10px;">タイトルへ戻る</button>
+  </div>
+</div>
+
 <div id="help-screen" class="screen hidden">
   <div class="help-content">
     <h2 class="help-title">遊び方</h2>
@@ -814,7 +891,91 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
       <p><strong>2人対戦</strong>：1台のスマホやタブレットを2人ではさんで対戦します。上側が2P、下側が1Pです。</p>
     </div>
 
-    <button id="help-back-btn" class="start-btn">タイトルへ戻る</button>
+    <button id="help-back-btn" class="start-btn">メニューへ戻る</button>
+  </div>
+</div>
+
+<div id="help-multiples-screen" class="screen hidden">
+  <div class="help-content">
+    <h2 class="help-title">倍数の見分け方</h2>
+    <p class="multiples-intro">合成数が「2・3・5・7・11」のどれで割り切れるか、数字の特徴から見分けよう！</p>
+
+    <section class="multiple-rule-card">
+      <h3 class="multiple-rule-title">2の倍数</h3>
+      <p class="multiple-rule-desc">一の位が偶数（0・2・4・6・8）なら、2の倍数です。</p>
+      <div class="multiple-chip-row">
+        <div class="multiple-chip">0</div>
+        <div class="multiple-chip">2</div>
+        <div class="multiple-chip">4</div>
+        <div class="multiple-chip">6</div>
+        <div class="multiple-chip">8</div>
+      </div>
+      <div class="multiple-example">
+        246<br>
+        一の位は「<span class="multiple-digit-highlight">6</span>」<br>
+        6は偶数
+      </div>
+      <p class="multiple-conclusion">だから、246は2の倍数！</p>
+    </section>
+
+    <section class="multiple-rule-card">
+      <h3 class="multiple-rule-title">3の倍数</h3>
+      <p class="multiple-rule-desc">各位の数の和が3の倍数なら、もとの数も3の倍数です。</p>
+      <div class="multiple-example">
+        372
+        <span class="multiple-sum-line">3 + 7 + 2 = 12</span>
+        12は3の倍数
+      </div>
+      <p class="multiple-conclusion">だから、372は3の倍数！</p>
+    </section>
+
+    <section class="multiple-rule-card">
+      <h3 class="multiple-rule-title">5の倍数</h3>
+      <p class="multiple-rule-desc">一の位が0か5なら、5の倍数です。</p>
+      <div class="multiple-example">
+        735<br>
+        一の位は「<span class="multiple-digit-highlight">5</span>」
+      </div>
+      <p class="multiple-note">一の位が 0 または 5 ならOK！</p>
+      <p class="multiple-conclusion">だから、735は5の倍数！</p>
+    </section>
+
+    <section class="multiple-rule-card">
+      <h3 class="multiple-rule-title">7の倍数</h3>
+      <p class="multiple-rule-desc">一の位の数字を切り離し、残りの数から「一の位の2倍」を引きます。その答えが7の倍数なら、もとの数も7の倍数です。</p>
+      <div class="multiple-example">
+        672
+        <ol class="multiple-steps">
+          <li><span class="step-num">①</span>一の位の「2」を切り離す → 残りは67</li>
+          <li><span class="step-num">②</span>一の位を2倍する → 2 × 2 = 4</li>
+          <li><span class="step-num">③</span>残りの数から引く → 67 − 4 = 63</li>
+          <li><span class="step-num">④</span>63は7の倍数</li>
+        </ol>
+        <div class="multiple-formula">67 − 2 × 2 = 63</div>
+      </div>
+      <p class="multiple-conclusion">だから、672は7の倍数！</p>
+      <p class="multiple-note">答えがまだ大きいときは、同じ手順をくり返してもOK！</p>
+    </section>
+
+    <section class="multiple-rule-card">
+      <h3 class="multiple-rule-title">11の倍数</h3>
+      <p class="multiple-rule-desc">左から数えて「奇数番目の数字の和」から「偶数番目の数字の和」を引きます。その差が0または11の倍数なら、もとの数も11の倍数です。</p>
+      <div class="multiple-example">
+        <div class="multiple-position">
+          <div class="multiple-position-digit"><span class="digit multiple-position-odd">5</span><span class="order">①</span></div>
+          <div class="multiple-position-digit"><span class="digit multiple-position-even">0</span><span class="order">②</span></div>
+          <div class="multiple-position-digit"><span class="digit multiple-position-odd">6</span><span class="order">③</span></div>
+        </div>
+        奇数番目の和：5 + 6 = 11<br>
+        偶数番目の和：0
+        <span class="multiple-sum-line">11 − 0 = 11</span>
+        11は11の倍数
+      </div>
+      <p class="multiple-conclusion">だから、506は11の倍数！</p>
+      <p class="multiple-note">121なら (1 + 1) − 2 = 0 だから121も11の倍数！<br>差がマイナスでも、11の倍数ならOK。</p>
+    </section>
+
+    <button type="button" id="help-multiples-back-btn" class="start-btn">メニューへ戻る</button>
   </div>
 </div>
 
@@ -2191,7 +2352,9 @@ function renderStatus(){
 /* ================= SCREEN / GAME FLOW ================= */
 function showScreen(name){
   document.getElementById('title-screen').classList.toggle('hidden', name !== 'title');
+  document.getElementById('help-menu-screen').classList.toggle('hidden', name !== 'helpMenu');
   document.getElementById('help-screen').classList.toggle('hidden', name !== 'help');
+  document.getElementById('help-multiples-screen').classList.toggle('hidden', name !== 'helpMultiples');
   document.getElementById('game-screen').classList.toggle('hidden', name !== 'game');
   document.getElementById('timeattack-screen').classList.toggle('hidden', name !== 'timeattack');
 }
@@ -2574,11 +2737,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   document.getElementById('help-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
+    showScreen('helpMenu');
+  });
+  document.getElementById('help-menu-howto-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
     showScreen('help');
+  });
+  document.getElementById('help-menu-multiples-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('helpMultiples');
+  });
+  document.getElementById('help-menu-title-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('title');
   });
   document.getElementById('help-back-btn').addEventListener('pointerdown', (e)=>{
     e.preventDefault();
-    showScreen('title');
+    showScreen('helpMenu');
+  });
+  document.getElementById('help-multiples-back-btn').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    showScreen('helpMenu');
   });
 
   document.getElementById('start-btn').addEventListener('pointerdown', (e)=>{
