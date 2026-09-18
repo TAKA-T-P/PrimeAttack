@@ -3490,7 +3490,8 @@ function renderAchievementsScreen(){
 
     let footer = '';
     if (allDone){
-      footer = `<div class="achievement-next-target">COMPLETE!</div>`;
+      const goldTier = series.tiers.find(t=>t.rank==='gold') || series.tiers[series.tiers.length-1];
+      footer = `<div class="achievement-next-target">COMPLETE!　条件「${goldTier.conditionText}」を達成！</div>`;
     } else {
       const nextTier = getNextTier(series, unlocked);
       const pctNext = getAchievementProgressPercent(series, nextTier, stats);
