@@ -1612,9 +1612,9 @@ const ACHIEVEMENT_SERIES = [
   { id:'correct_streak', category:'technique', label:'連続正解枚数', direction:'higher', progressType:'best',
     getValue:(s)=>s.bestCorrectStreak, unit:'枚',
     tiers:[
-      {rank:'bronze',icon:'🥉',title:'コンボスターター',target:3,conditionText:'お手つきせず連続3枚正解'},
+      {rank:'bronze',icon:'🥉',title:'コンボスターター',target:5,conditionText:'お手つきせず連続5枚正解'},
       {rank:'silver',icon:'🥈',title:'セブンコンボ',target:7,conditionText:'お手つきせず連続7枚正解'},
-      {rank:'gold',icon:'🥇',title:'ノンストップ10',target:10,conditionText:'お手つきせず連続10枚正解'}
+      {rank:'gold',icon:'🥇',title:'コンボマスター',target:13,conditionText:'お手つきせず連続13枚正解'}
     ]
   },
   { id:'round_sweep', category:'technique', label:'1ターンをすべて自分で分解', direction:'higher', progressType:'level',
