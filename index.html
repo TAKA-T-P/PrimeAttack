@@ -991,6 +991,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
 .unlock-header{font-size:14px;font-weight:800;color:var(--sub);letter-spacing:1px;}
 #unlock-medal{font-size:64px;line-height:1;animation:pop 0.35s ease;}
 #unlock-title{font-size:clamp(18px,5.5vw,22px);font-weight:800;color:#fff;}
+#unlock-series{font-size:13px;font-weight:700;color:var(--accent2);}
 #unlock-condition{font-size:13px;color:var(--sub);}
 #unlock-counter{font-size:13px;color:var(--sub);font-weight:700;}
 .unlock-rankup{text-align:center;}
@@ -1378,6 +1379,7 @@ legend{padding:0 6px;color:var(--sub);font-size:13px;}
     <div class="unlock-header">ACHIEVEMENT GET!</div>
     <div id="unlock-medal"></div>
     <div id="unlock-title"></div>
+    <div id="unlock-series"></div>
     <div id="unlock-condition"></div>
     <div id="unlock-counter"></div>
     <div class="unlock-btn-row">
@@ -1657,7 +1659,7 @@ const ACHIEVEMENT_SERIES = [
     tiers:[
       {rank:'bronze',icon:'🥉',title:'紙一重',target:1,conditionText:'1回勝利'},
       {rank:'silver',icon:'🥈',title:'接戦巧者',target:3,conditionText:'3回勝利'},
-      {rank:'gold',icon:'🥇',title:'接戦王',target:10,conditionText:'10回勝利'}
+      {rank:'gold',icon:'🥇',title:'接戦王',target:5,conditionText:'5回勝利'}
     ]
   },
   { id:'big_margin_win', category:'technique', label:'大差をつけて勝利', direction:'higher', progressType:'best',
@@ -3570,6 +3572,7 @@ function showAchievementUnlockStep(){
   content.className = 'achievement-unlock-content rank-' + tier.rank;
   document.getElementById('unlock-medal').textContent = tier.icon;
   document.getElementById('unlock-title').textContent = `${tier.icon} ${tier.title}`;
+  document.getElementById('unlock-series').textContent = series.label;
   document.getElementById('unlock-condition').textContent = tier.conditionText;
   document.getElementById('unlock-counter').textContent = `${idx+1} / ${queue.length}`;
 
